@@ -1,4 +1,5 @@
 slots = []
+excluded = []
 teacherlist = ['Mr.Walter','Mr.Jeff','Ms.Gary','Ms.Onion']
 Students = {'Will':'Mr.Walter,Ms.Gary','Bob':'Mr.Jeff,Ms.Onion'}
 # Introducing a harder students list with 'Gee' needing one of Bob's teachers and one of Will's teachers
@@ -32,25 +33,34 @@ def checkSlot(teacher,student):
 def emptySlot():
     slots.append('Empty slot')
 
-# Creates slots
+# Creates slots and excludes students from another appointment that time slot
 def createSlot(teacher,student):
     slots.append((teacher+" : "+student))
+    excludeStudent(student)
+
+def excludeStudent(student):
+    excluded.append(student)
+
+def checkExcluded(student):
+    if student in excluded:
+        return True
+    else:
+        return False
 
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(TotalSlots,teacherlist,Students):
     for i in range(TotalSlots):
+        excluded = []
         slots.append('Slot :'+str(i))
         for teacher in teacherlist:
-            verified = False
-            while verified == False:
-                for student in Students.keys():
-                    if teacher in Students[student]:
-                        if checkSlot(teacher,student):
-                            createSlot(teacher,student)
-                            verified = True
-                        else:
-                            emptySlot()
-                            verified = True
+            for student in Students.keys():
+                if teacher in Students[student]:
+                    if checkSlot(teacher,student) and not checkExcluded(student):
+                        createSlot(teacher,student)
+                        break
+                    else:
+                        emptySlot()
+                        break
 
     outputSlots()
 
