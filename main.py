@@ -29,6 +29,9 @@ def checkSlot(teacher,student):
                 return False
         return True
 
+def emptySlot():
+    slots.append('Empty slot')
+
 # Creates slots
 def createSlot(teacher,student):
     slots.append((teacher+" : "+student))
@@ -42,29 +45,16 @@ def slotSorter(TotalSlots,teacherlist,Students):
             while verified == False:
                 for student in Students.keys():
                     if teacher in Students[student]:
-                        createSlot(teacher, student)
-                        verified = True
-                        '''
                         if checkSlot(teacher,student):
                             createSlot(teacher,student)
                             verified = True
                         else:
-                            print("Slot has already been made")
+                            emptySlot()
                             verified = True
-                        '''
-    outputSlots()
 
-# Basic appointments - no clashes
-slotSorter(TotalSlots,teacherlist,Students)
+    outputSlots()
 
 # Harder appointments now - clashes will occur
 slotSorter(TotalSlots,teacherlist,HarderStudents)
 
-
-# Testing dictionaries
-print(Students.values())
-print(Students.keys())
-print(Students['Will'])
-
-# Exclude students if they have already had an appointment with the respective teacher
 # Stop the occurence of a teacher and student having multiple appointemnts per time slot
