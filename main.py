@@ -1,15 +1,18 @@
+# Allow for evening timings
+# Need to take in data from csv and format it to work in here
+# Priority weightings
+
 slots = []
 excluded = []
 empty = 0
+
 teacherlist = ['Mr.Walter','Mr.Jeff','Ms.Gary','Ms.Onion']
-Students = {'Will':'Mr.Walter,Ms.Gary','Bob':'Mr.Jeff,Ms.Onion'}
-# Introducing a harder students list with 'Gee' needing one of Bob's teachers and one of Will's teachers
-HarderStudents = {'Will':'Mr.Walter,Ms.Gary','Bob':'Mr.Jeff,Ms.Onion','Gee':'Mr.Walter,Mr.Jeff'}
 
 EvenHarderStudents = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Gee':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Jack':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Harry':'Ms.Onion,Ms.Gary','Alice':'Ms.Gary,Ms.Gary','Emily':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary',
                       'Ben':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Bug':'monkey','AnotherBug':'28828199282991',}
+
 StartTime = 7
 EndTIme = 8.5
 TotalSlots = int((EndTIme - StartTime)*12)
@@ -75,4 +78,4 @@ def slotSorter(TotalSlots,teacherlist,Students):
 
 slotSorter(TotalSlots,teacherlist,EvenHarderStudents)
 
-# Stop the occurence of a teacher and student having multiple appointemnts per time slot
+# Slot gap needed in-between each students apoointment
