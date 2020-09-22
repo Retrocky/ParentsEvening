@@ -45,12 +45,13 @@ def emptySlot(teacher):
     slots.append((teacher+" : BREAK"))
 
 # Creates slots and excludes students from another appointment that time slot
-def createSlot(teacher,student):
+def createSlot(teacher,student,slot):
     slots.append((teacher+" : "+student))
     excludeStudent(student)
+    addBreak(student,slot)
 
-def addBreak(student):
-    if len(breakList1) == 0:
+def addBreak(student,slot):
+    if slot % 2 == 0:
         breakList1.append(student)
     else:
         breakList2.append(student)
@@ -82,6 +83,9 @@ def clearExcluded():
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(TotalSlots,teacherlist,Students):
     for i in range(TotalSlots):
+        print(breakList1)
+        print('')
+        print(breakList2)
         checkBreaks(i)
         clearExcluded()
         slots.append('Slot :'+str(i))
@@ -90,9 +94,8 @@ def slotSorter(TotalSlots,teacherlist,Students):
             for student in Students.keys():
                 if teacher in Students[student]:
                     if checkSlot(teacher,student) and not checkExcluded(student) and not onBreak(student):
-                        createSlot(teacher,student)
+                        createSlot(teacher,student,i)
                         slotCreated = True
-                        addBreak(student)
                         break
             if slotCreated == False:
                 emptySlot(teacher)
