@@ -1,16 +1,19 @@
-# Allow for evening timings
+# TO DO LIST
+# Slot gap needed in-between each students appointment - DOING
+# Allow for student evening timings
 # Need to take in data from csv and format it to work in here
 # Priority weightings
 
 slots = []
 excluded = []
-breakList1 = []
-breakList2 = []
+breakList = []
 empty = 0
+appointmentLength = 5
+appointmentDivisible = 0.12
 
 teacherlist = ['Mr.Walter','Mr.Jeff','Ms.Gary','Ms.Onion']
 
-EvenHarderStudents = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.Onion,Mr.Walter',
+studentTeacher = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Gee':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Jack':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Harry':'Ms.Onion,Ms.Gary','Alice':'Ms.Gary,Ms.Gary','Emily':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary',
                       'Ben':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Bug':'monkey','AnotherBug':'28828199282991',}
@@ -24,7 +27,7 @@ print('Number of slots : '+str(TotalSlots))
 def outputSlots():
     print('='*100)
     for item in slots:
-        if 'Slot :' in item:
+        if 'Slot : ' in item:
             print("")
             print(item)
         else:
@@ -51,19 +54,20 @@ def createSlot(teacher,student,slot):
     addBreak(student,slot)
 
 def addBreak(student,slot):
-    if slot % 2 == 0:
-        breakList1.append(student)
-    else:
-        breakList2.append(student)
+    breakList.append((slot,student))
 
 def checkBreaks(slot):
-    if slot > 0 and slot % 2 == 0:
-        breakList1.clear()
-    if slot > 0:
-        breakList2.clear()
+    for item in breakList:
+        print('Students exclusion round',item[0])
+        print('Current round',slot)
+        print(breakList)
+        if slot >= item[0]+2:
+            print(item,' Will be removed')
+            breakList.remove(item)
+            checkBreaks(slot)
 
 def onBreak(student):
-    if student in breakList1 or breakList2:
+    if student in breakList:
         return True
     else:
         return False
@@ -83,12 +87,9 @@ def clearExcluded():
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(TotalSlots,teacherlist,Students):
     for i in range(TotalSlots):
-        print(breakList1)
-        print('')
-        print(breakList2)
         checkBreaks(i)
         clearExcluded()
-        slots.append('Slot :'+str(i))
+        slots.append('Slot : '+str(i)+' Time : '+str(StartTime)+':'+str(float(appointmentDivisible*i)*60))
         for teacher in teacherlist:
             slotCreated = False
             for student in Students.keys():
@@ -101,6 +102,4 @@ def slotSorter(TotalSlots,teacherlist,Students):
                 emptySlot(teacher)
     outputSlots()
 
-slotSorter(TotalSlots,teacherlist,EvenHarderStudents)
-
-# Slot gap needed in-between each students apoointment
+slotSorter(TotalSlots,teacherlist,studentTeacher)
