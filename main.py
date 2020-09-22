@@ -4,6 +4,8 @@
 
 slots = []
 excluded = []
+breakList1 = []
+breakList2 = []
 empty = 0
 
 teacherlist = ['Mr.Walter','Mr.Jeff','Ms.Gary','Ms.Onion']
@@ -47,6 +49,24 @@ def createSlot(teacher,student):
     slots.append((teacher+" : "+student))
     excludeStudent(student)
 
+def addBreak(student):
+    if len(breakList1) == 0:
+        breakList1.append(student)
+    else:
+        breakList2.append(student)
+
+def checkBreaks(slot):
+    if slot > 0 and slot % 2 == 0:
+        breakList1.clear()
+    if slot > 0:
+        breakList2.clear()
+
+def onBreak(student):
+    if student in breakList1 or breakList2:
+        return True
+    else:
+        return False
+
 def excludeStudent(student):
     excluded.append(student)
 
@@ -62,15 +82,17 @@ def clearExcluded():
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(TotalSlots,teacherlist,Students):
     for i in range(TotalSlots):
+        checkBreaks(i)
         clearExcluded()
         slots.append('Slot :'+str(i))
         for teacher in teacherlist:
             slotCreated = False
             for student in Students.keys():
                 if teacher in Students[student]:
-                    if checkSlot(teacher,student) and not checkExcluded(student):
+                    if checkSlot(teacher,student) and not checkExcluded(student) and not onBreak(student):
                         createSlot(teacher,student)
                         slotCreated = True
+                        addBreak(student)
                         break
             if slotCreated == False:
                 emptySlot(teacher)
