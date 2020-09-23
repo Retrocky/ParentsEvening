@@ -1,6 +1,7 @@
 # TO DO LIST
 # Slot gap needed in-between each students appointment - DOING
 # Allow for student evening timings
+# Show time for each appointment - DOING
 # Need to take in data from csv and format it to work in here
 # Priority weightings
 
@@ -29,6 +30,7 @@ def outputSlots():
     for item in slots:
         if 'Slot : ' in item:
             print("")
+            print('-'*50)
             print(item)
         else:
             print(item)
@@ -58,11 +60,7 @@ def addBreak(student,slot):
 
 def checkBreaks(slot):
     for item in breakList:
-        print('Students exclusion round',item[0])
-        print('Current round',slot)
-        print(breakList)
         if slot >= item[0]+2:
-            print(item,' Will be removed')
             breakList.remove(item)
             checkBreaks(slot)
 
