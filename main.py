@@ -82,12 +82,15 @@ def checkExcluded(student):
 def clearExcluded():
     excluded.clear()
 
+def slotHeading(slot,StartTime):
+    slots.append('Slot : '+str(slot)+' Time : '+str(StartTime))
+
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(TotalSlots,teacherlist,Students):
     for i in range(TotalSlots):
         checkBreaks(i)
         clearExcluded()
-        slots.append('Slot : '+str(i)+' Time : '+str(StartTime)+':'+str(float(appointmentDivisible*i)*60))
+        slotHeading(i,StartTime)
         for teacher in teacherlist:
             slotCreated = False
             for student in Students.keys():
