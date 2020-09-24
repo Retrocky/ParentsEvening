@@ -1,5 +1,4 @@
 # TO DO LIST
-# Slot gap needed in-between each students appointment - DOING
 # Allow for student evening timings
 # Need to take in data from csv and format it to work in here
 # Priority weightings
@@ -53,20 +52,31 @@ def emptySlot(teacher):
 def createSlot(teacher,student,slot):
     slots.append((teacher+" : "+student))
     excludeStudent(student)
-    clearBreaks()
-    addBreak(student)
+    #addBreak(student)
 
+'''
 def addBreak(student):
     breakList.append(student)
 
-def clearBreaks():
-    breakList.clear()
+def clearBreaks(slot):
+    if slot == slot-1:
+        print('CLEARING BREAKLIST')
+        breakList.clear()
 
 def onBreak(student):
-    if student in breakList:
-        return True
-    else:
-        return False
+    for item in slots[::-1]:
+        if 'Slot : ' in item:
+            for i in range(0,4):
+                try:
+                    nice = slots[slots.index(item)-i]
+                    print(nice)
+                    if student in nice:
+                        return True
+
+                except:
+                    return False
+    return False
+'''
 
 def excludeStudent(student):
     excluded.append(student)
@@ -84,7 +94,10 @@ def slotHeading(slot,StartTime):
     time = StartTime+appointmentDivisible*slot
     hours = int(time)
     minutes = (time * 60) % 60
-    time = str(hours)+':'+str(int(minutes.__round__()))
+    minutes = str(int(minutes.__round__()))
+    if len(minutes) == 1:
+        minutes = '0'+minutes
+    time = str(hours)+':'+str(minutes)
     slots.append('Slot : '+str(slot)+' Time : '+str(time))
 
 # Loops through each slot with each teacher and matches students to their teachers needed
@@ -96,7 +109,7 @@ def slotSorter(TotalSlots,teacherlist,Students):
             slotCreated = False
             for student in Students.keys():
                 if teacher in Students[student]:
-                    if checkSlot(teacher,student) and not checkExcluded(student) and onBreak(student) == False:
+                    if checkSlot(teacher,student) and not checkExcluded(student):
                         createSlot(teacher,student,i)
                         slotCreated = True
                         break
