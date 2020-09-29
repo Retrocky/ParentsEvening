@@ -1,7 +1,8 @@
 # TO DO LIST
-# Allow for student evening timings
-# Need to take in data from csv and format it to work in here
-# Priority weightings
+# Student timings constraint
+# CSV input - Extension google form -> CSV -> Python - DOING
+# Priority weightings constraint
+# Add breaks - FIXING
 
 slots = []
 excluded = []
@@ -18,6 +19,9 @@ studentTeacher = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.
                       'Harry':'Ms.Onion,Ms.Gary','Alice':'Ms.Gary,Ms.Gary','Emily':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary',
                       'Ben':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Bug':'monkey','AnotherBug':'28828199282991',}
 
+temp = studentTeacher.copy()
+
+# CAN BE ANY TIME
 StartTime = 7
 EndTIme = 8.5
 TotalSlots = int((EndTIme - StartTime)*12)
@@ -35,48 +39,15 @@ def outputSlots():
             print(item)
     print('='*100)
 
-# Checks if the slot has already been made
-def checkSlot(teacher,student):
-    if len(slots) == 0:
-        return True
-    else:
-        for appointment in slots:
-            if (teacher+" : "+student) == appointment:
-                return False
-        return True
-
 def emptySlot(teacher):
     slots.append((teacher+" : BREAK"))
 
 # Creates slots and excludes students from another appointment that time slot
-def createSlot(teacher,student,slot):
+def createSlot(teacher,student):
     slots.append((teacher+" : "+student))
+    studentTeacher[student] = studentTeacher[student].replace(teacher + ',', '')
+    temp.update(studentTeacher)
     excludeStudent(student)
-    #addBreak(student)
-
-'''
-def addBreak(student):
-    breakList.append(student)
-
-def clearBreaks(slot):
-    if slot == slot-1:
-        print('CLEARING BREAKLIST')
-        breakList.clear()
-
-def onBreak(student):
-    for item in slots[::-1]:
-        if 'Slot : ' in item:
-            for i in range(0,4):
-                try:
-                    nice = slots[slots.index(item)-i]
-                    print(nice)
-                    if student in nice:
-                        return True
-
-                except:
-                    return False
-    return False
-'''
 
 def excludeStudent(student):
     excluded.append(student)
@@ -90,6 +61,7 @@ def checkExcluded(student):
 def clearExcluded():
     excluded.clear()
 
+# SLOT HEADING - CREATES TIME FORMAT
 def slotHeading(slot,StartTime):
     time = StartTime+appointmentDivisible*slot
     hours = int(time)
@@ -101,7 +73,7 @@ def slotHeading(slot,StartTime):
     slots.append('Slot : '+str(slot)+' Time : '+str(time))
 
 # Loops through each slot with each teacher and matches students to their teachers needed
-def slotSorter(TotalSlots,teacherlist,Students):
+def slotSorter(TotalSlots,teacherlist,Students,temp):
     for i in range(TotalSlots):
         clearExcluded()
         slotHeading(i,StartTime)
@@ -109,12 +81,15 @@ def slotSorter(TotalSlots,teacherlist,Students):
             slotCreated = False
             for student in Students.keys():
                 if teacher in Students[student]:
-                    if checkSlot(teacher,student) and not checkExcluded(student):
-                        createSlot(teacher,student,i)
+                    if not checkExcluded(student) and slotCreated == False:
+                        createSlot(teacher,student)
                         slotCreated = True
+                        Students[student] = 'BREAK'
                         break
+                elif Students[student] == 'BREAK' and slotCreated == False:
+                    Students[student] = temp[student]
             if slotCreated == False:
                 emptySlot(teacher)
     outputSlots()
 
-slotSorter(TotalSlots,teacherlist,studentTeacher)
+slotSorter(TotalSlots,teacherlist,studentTeacher,temp)

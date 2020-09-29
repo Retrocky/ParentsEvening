@@ -1,17 +1,14 @@
-import random
+import csv
 
-list1 = ['Bob','Jack','Will','Harry']
-breaklist = []
+filename = 'ParentsEvening.csv'
 
-def randomWithBreak(list):
-    for i in range(500):
-        selected = list[random.randrange(0,4)]
-        if selected not in breaklist:
-            print(selected)
-            breaklist.clear()
-            breaklist.append(selected)
-        else:
-            while selected in breaklist:
-                selected = list[random.randrange(0, 4)]
+reader = csv.DictReader(open(filename))
+for raw in reader:
+    print(raw)
 
-randomWithBreak(list1)
+class Student:
+    def __init__(self,name,teachers,eveningarrival,eveningdeparture):
+        self.name = name
+        self.teachers = teachers
+        self.eveningarrival = eveningarrival
+        self.eveningdeparture = eveningdeparture
