@@ -1,10 +1,11 @@
 import csv
 
+'''
 filename = 'ParentsEvening.csv'
 
 reader = csv.DictReader(open(filename))
 for raw in reader:
-    print(raw)
+    #print(raw)
 
 class Student:
     def __init__(self,name,teachers,eveningarrival,eveningdeparture):
@@ -12,3 +13,9 @@ class Student:
         self.teachers = teachers
         self.eveningarrival = eveningarrival
         self.eveningdeparture = eveningdeparture
+'''
+
+breaklist = ['Harry','Jack']
+print(breaklist)
+breaklist.remove('Harry')
+print(breaklist)

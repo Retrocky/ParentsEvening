@@ -8,6 +8,7 @@ import time
 # Hardcoded variables
 slots = []
 excluded = []
+breaklist = []
 appointmentLength = 5
 appointmentDivisible = appointmentLength/60
 teacherlist = ['Mr.Walter','Mr.Jeff','Ms.Gary','Ms.Onion']
@@ -16,6 +17,7 @@ studentTeacher = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.
                       'Harry':'Ms.Onion,Ms.Gary','Alice':'Ms.Gary,Ms.Gary','Emily':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary',
                       'Ben':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Bug':'monkey','AnotherBug':'28828199282991',}
 temp = studentTeacher.copy()
+temp2 = []
 StartTime = 7
 EndTIme = 8.5
 TotalSlots = int((EndTIme - StartTime)*12)
@@ -116,6 +118,7 @@ def slotSorter(TotalSlots,teacherlist,Students,temp):
                     if not checkExcluded(student) and slotCreated == False:
                         createSlot(teacher,student)
                         slotCreated = True
+                        temp = Students.copy()
                         Students[student] = 'BREAK'
                         break
                 elif Students[student] == 'BREAK' and slotCreated == False:
