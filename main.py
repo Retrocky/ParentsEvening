@@ -42,6 +42,7 @@ def menu():
 
 def checkMenuValues(value):
     try:
+        value = int(value)
         if value == 1:
             slotSorter(TotalSlots, teacherlist, studentTeacher, temp)
         elif value == 2:
@@ -52,7 +53,7 @@ def checkMenuValues(value):
             print('Invalid choice - Please try again.')
             print('')
             menu()
-    except:
+    except ValueError:
         print('Enter a digit from 1 -> 3')
         print('')
         menu()
