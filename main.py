@@ -1,3 +1,4 @@
+import time
 # TO DO LIST
 # Student timings constraint
 # CSV input - Extension google form -> CSV -> Python - DOING
@@ -21,17 +22,47 @@ studentTeacher = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.
 
 temp = studentTeacher.copy()
 
-# CAN BE ANY TIME
 StartTime = 7
 EndTIme = 8.5
 TotalSlots = int((EndTIme - StartTime)*12)
 print('Number of slots : '+str(TotalSlots))
+
+def menu():
+    print('+'*100)
+    print('')
+    print('Parents Evening Scheduler')
+    print('')
+    print('1 - Run algorithm with default settings')
+    print('2 - Change settings')
+    print('3 - Exit')
+    print('')
+    value = input('Enter choice : ')
+    print('+'*100)
+    checkMenuValues(value)
+
+def checkMenuValues(value):
+    try:
+        if value == 1:
+            slotSorter(TotalSlots, teacherlist, studentTeacher, temp)
+        elif value == 2:
+            pass
+        elif value == 3:
+            exit()
+        else:
+            print('Invalid choice - Please try again.')
+            print('')
+            menu()
+    except:
+        print('Enter a digit from 1 -> 3')
+        print('')
+        menu()
 
 # Outputs slots
 def outputSlots():
     print('='*100)
     for item in slots:
         if 'Slot : ' in item:
+            time.sleep(0.5)
             print("")
             print('-'*50)
             print(item)
@@ -92,4 +123,5 @@ def slotSorter(TotalSlots,teacherlist,Students,temp):
                 emptySlot(teacher)
     outputSlots()
 
-slotSorter(TotalSlots,teacherlist,studentTeacher,temp)
+if __name__ == '__main__':
+    menu()
