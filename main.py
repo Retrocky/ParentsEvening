@@ -5,28 +5,23 @@ import time
 # Priority weightings constraint
 # Add breaks - FIXING
 
+# Hardcoded variables
 slots = []
 excluded = []
-breakList = []
-breakList2 = []
-empty = 0
 appointmentLength = 5
 appointmentDivisible = appointmentLength/60
-
 teacherlist = ['Mr.Walter','Mr.Jeff','Ms.Gary','Ms.Onion']
-
 studentTeacher = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Gee':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Jack':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Harry':'Ms.Onion,Ms.Gary','Alice':'Ms.Gary,Ms.Gary','Emily':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary',
                       'Ben':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Bug':'monkey','AnotherBug':'28828199282991',}
-
 temp = studentTeacher.copy()
-
 StartTime = 7
 EndTIme = 8.5
 TotalSlots = int((EndTIme - StartTime)*12)
 print('Number of slots : '+str(TotalSlots))
 
+# Main menu UI
 def menu():
     print('+'*100)
     print('')
@@ -40,6 +35,7 @@ def menu():
     print('+'*100)
     checkMenuValues(value)
 
+# Checks / validates menu choices and redirects to correct function.
 def checkMenuValues(value):
     try:
         value = int(value)
@@ -71,6 +67,7 @@ def outputSlots():
             print(item)
     print('='*100)
 
+# Creates a break for the teacher if the slot is empty
 def emptySlot(teacher):
     slots.append((teacher+" : BREAK"))
 
@@ -81,19 +78,22 @@ def createSlot(teacher,student):
     temp.update(studentTeacher)
     excludeStudent(student)
 
+# Excludes student from another appointment during the current slot
 def excludeStudent(student):
     excluded.append(student)
 
+# Checks if a student is excluded from this round
 def checkExcluded(student):
     if student in excluded:
         return True
     else:
         return False
 
+# Clears the excluded students at the start of a new slot
 def clearExcluded():
     excluded.clear()
 
-# SLOT HEADING - CREATES TIME FORMAT
+# Slot heading - Formats time in a user-friendly manner
 def slotHeading(slot,StartTime):
     time = StartTime+appointmentDivisible*slot
     hours = int(time)
@@ -124,5 +124,6 @@ def slotSorter(TotalSlots,teacherlist,Students,temp):
                 emptySlot(teacher)
     outputSlots()
 
+# Starts the program
 if __name__ == '__main__':
     menu()
