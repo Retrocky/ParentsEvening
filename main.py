@@ -8,20 +8,11 @@ import time
 # Hardcoded variables
 slots = []
 excluded = []
-breaklist = []
-appointmentLength = 5
-appointmentDivisible = appointmentLength/60
 teacherlist = ['Mr.Walter','Mr.Jeff','Ms.Gary','Ms.Onion']
 studentTeacher = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Gee':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Jack':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Harry':'Ms.Onion,Ms.Gary','Alice':'Ms.Gary,Ms.Gary','Emily':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary',
                       'Ben':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Bug':'monkey','AnotherBug':'28828199282991',}
-temp = studentTeacher.copy()
-temp2 = []
-StartTime = 7
-EndTIme = 8.5
-TotalSlots = int((EndTIme - StartTime)*12)
-print('Number of slots : '+str(TotalSlots))
 
 # Main menu UI
 def menu():
@@ -30,7 +21,7 @@ def menu():
     print('Parents Evening Scheduler')
     print('')
     print('1 - Run algorithm with default settings')
-    print('2 - Change settings')
+    print('2 - Custom run')
     print('3 - Exit')
     print('')
     value = input('Enter choice : ')
@@ -42,9 +33,33 @@ def checkMenuValues(value):
     try:
         value = int(value)
         if value == 1:
-            slotSorter(TotalSlots, teacherlist, studentTeacher, temp)
+            slotSorter(teacherlist,studentTeacher)
         elif value == 2:
-            pass
+            print('')
+            print(' Custom run')
+            print('')
+            eveningStart = input('Enter evening start time : ')
+            eveningEnd = input('Enter evening end time : ')
+            appointmentLength = input('Enter appointment length (In minutes) : ')
+            try:
+                eveningStart = int(eveningStart)
+                try:
+                    eveningEnd = int(eveningEnd)
+                    try:
+                        appointmentLength = int(appointmentLength)
+                        customRun(eveningStart,eveningEnd,appointmentLength)
+                    except ValueError:
+                        print('Enter a digit : ')
+                        print('')
+                        checkMenuValues(value)
+                except ValueError:
+                    print('Enter a digit : ')
+                    print('')
+                    checkMenuValues(value)
+            except ValueError:
+                print('Enter a digit : ')
+                print('')
+                checkMenuValues(value)
         elif value == 3:
             exit()
         else:
@@ -55,6 +70,9 @@ def checkMenuValues(value):
         print('Enter a digit from 1 -> 3')
         print('')
         menu()
+
+def customRun(eveningStart,eveningEnd,appointmentLength):
+    slotSorter(teacherlist,studentTeacher,eveningStart,eveningEnd,appointmentLength)
 
 # Outputs slots
 def outputSlots():
@@ -104,7 +122,8 @@ def clearExcluded():
     excluded.clear()
 
 # Slot heading - Formats time in a user-friendly manner
-def slotHeading(slot,StartTime):
+def slotHeading(slot,StartTime,appointmentLength):
+    appointmentDivisible = appointmentLength/60
     time = StartTime+appointmentDivisible*slot
     hours = int(time)
     minutes = (time * 60) % 60
@@ -115,16 +134,18 @@ def slotHeading(slot,StartTime):
     slots.append('Slot : '+str(slot)+' Time : '+str(time))
 
 # Loops through each slot with each teacher and matches students to their teachers needed
-def slotSorter(TotalSlots,teacherlist,Students,temp):
+def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentLength=5):
+    TotalSlots = int((eveningStart - eveningEnd) * 12)
+    print('Number of slots : ' + str(TotalSlots))
     for i in range(TotalSlots):
         print('---')
-        print(Students)
+        print(students)
         clearExcluded()
-        slotHeading(i,StartTime)
-        for teacher in teacherlist:
+        slotHeading(i,eveningStart,appointmentLength)
+        for teacher in teacherList:
             slotCreated = False
-            for student in Students.keys():
-                if teacher in Students[student]:
+            for student in students.keys():
+                if teacher in students[student]:
                     if not checkExcluded(student) and slotCreated == False and checkSlot(teacher,student):
                         createSlot(teacher,student)
                         slotCreated = True
