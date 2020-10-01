@@ -79,6 +79,15 @@ def createSlot(teacher,student):
     studentTeacher[student] = studentTeacher[student].replace(teacher + ',', '')
     excludeStudent(student)
 
+def checkSlot(teacher,student):
+    if len(slots) == 0:
+        return True
+    else:
+        for appointment in slots:
+            if (teacher+" : "+student) == appointment:
+                return False
+        return True
+
 # Excludes student from another appointment during the current slot
 def excludeStudent(student):
     excluded.append(student)
@@ -108,25 +117,18 @@ def slotHeading(slot,StartTime):
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(TotalSlots,teacherlist,Students,temp):
     for i in range(TotalSlots):
-        print('')
-        print('NEW ROUND')
-        print('BREAKLIST',breaklist)
+        print('---')
+        print(Students)
         clearExcluded()
         slotHeading(i,StartTime)
         for teacher in teacherlist:
             slotCreated = False
             for student in Students.keys():
                 if teacher in Students[student]:
-                    if not checkExcluded(student) and slotCreated == False and student not in breaklist:
-                        print(student,'needs to go on break')
+                    if not checkExcluded(student) and slotCreated == False and checkSlot(teacher,student):
                         createSlot(teacher,student)
                         slotCreated = True
-                        print('BEFORE',breaklist)
-                        breaklist.append(student)
-                        print('AFTER',breaklist)
-                    elif student in breaklist and slotCreated == False:
-                        print('REMOVING',student)
-                        breaklist.remove(student)
+                        break
             if slotCreated == False:
                 emptySlot(teacher)
     outputSlots()
