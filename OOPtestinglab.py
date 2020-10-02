@@ -29,8 +29,6 @@ startTimes = {}
 endTimes = {}
 
 data = pandas.read_csv(filename)
-
-
 for i in range(len(data.index)):
     item = data.loc[i]
     dict[item[0]] = item[1]

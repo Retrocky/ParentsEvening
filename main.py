@@ -1,4 +1,5 @@
 import time
+import pandas
 
 # Import CSV data
 
@@ -8,10 +9,15 @@ excluded = []
 breaklist = []
 higherbreaklist = []
 teacherlist = ['Mr.Walter','Mr.Jeff','Ms.Gary','Ms.Onion']
+'''
 studentTeacher = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Gee':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Jack':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Harry':'Ms.Onion,Ms.Gary','Alice':'Ms.Gary,Ms.Gary','Emily':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary',
-                      'Ben':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Bug':'monkey','AnotherBug':'28828199282991',}
+                      'Ben':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary'}
+'''
+studentTeacher = {}
+startTimes = {}
+endTimes = {}
 
 # Main menu UI
 def menu():
@@ -32,6 +38,7 @@ def checkMenuValues(value):
     try:
         value = int(value)
         if value == 1:
+            getData('ParentsEvening.csv')
             slotSorter(teacherlist,studentTeacher)
         elif value == 2:
             print('')
@@ -40,12 +47,25 @@ def checkMenuValues(value):
             eveningStart = input('Enter evening start time : ')
             eveningEnd = input('Enter evening end time : ')
             appointmentLength = input('Enter appointment length (In minutes) : ')
+            print('')
+            filename = input('CSV file path : ')
             try:
                 eveningStart = int(eveningStart)
                 try:
                     eveningEnd = int(eveningEnd)
                     try:
                         appointmentLength = int(appointmentLength)
+                        try:
+                            getData(str(filename))
+                        except FileNotFoundError:
+                            while True:
+                                print('File doesnt exist, please try again.')
+                                filename = input('CSV file path : ')
+                                try:
+                                    getData(filename)
+                                    break
+                                except FileNotFoundError:
+                                    pass
                         customRun(eveningStart,eveningEnd,appointmentLength)
                     except ValueError:
                         print('Enter a digit : ')
@@ -75,7 +95,12 @@ def customRun(eveningStart,eveningEnd,appointmentLength):
     slotSorter(teacherlist,studentTeacher,eveningStart,eveningEnd,appointmentLength)
 
 def getData(filename):
-    pass
+    data = pandas.read_csv(filename)
+    for i in range(len(data.index)):
+        item = data.loc[i]
+        studentTeacher[item[0]] = item[1]
+        startTimes[item[0]] = item[2]
+        endTimes[item[0]] = item[3]
 
 # Outputs slots
 def outputSlots():
