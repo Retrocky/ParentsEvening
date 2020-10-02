@@ -41,44 +41,37 @@ def checkMenuValues(value):
             getData('ParentsEvening.csv')
             slotSorter(teacherlist,studentTeacher)
         elif value == 2:
-            print('')
             print(' Custom run')
             print('')
-            eveningStart = input('Enter evening start time : ')
-            eveningEnd = input('Enter evening end time : ')
-            appointmentLength = input('Enter appointment length (In minutes) : ')
-            print('')
-            filename = input('CSV file path : ')
-            try:
-                eveningStart = int(eveningStart)
+            while True:
+                eveningStart = input('Evening start time : ')
                 try:
-                    eveningEnd = int(eveningEnd)
-                    try:
-                        appointmentLength = int(appointmentLength)
-                        try:
-                            getData(str(filename))
-                        except FileNotFoundError:
-                            while True:
-                                print('File doesnt exist, please try again.')
-                                filename = input('CSV file path : ')
-                                try:
-                                    getData(filename)
-                                    break
-                                except FileNotFoundError:
-                                    pass
-                        customRun(eveningStart,eveningEnd,appointmentLength)
-                    except ValueError:
-                        print('Enter a digit : ')
-                        print('')
-                        checkMenuValues(value)
+                    eveningStart = float(eveningStart)
+                    break
                 except ValueError:
-                    print('Enter a digit : ')
-                    print('')
-                    checkMenuValues(value)
-            except ValueError:
-                print('Enter a digit : ')
-                print('')
-                checkMenuValues(value)
+                    print('Please enter a digit')
+            while True:
+                eveningEnd = input('Evening end time : ')
+                try:
+                    eveningEnd = float(eveningEnd)
+                    break
+                except ValueError:
+                    print('Please enter a digit')
+            while True:
+                appointmentLength = input('Enter appointment length (In minutes) : ')
+                try:
+                    appointmentLength = int(appointmentLength)
+                    break
+                except ValueError:
+                    print('Please enter an integer')
+            while True:
+                filename = input('CSV file path : ')
+                try:
+                    getData(filename)
+                    break
+                except FileNotFoundError:
+                    print('File doesnt exist, please try again.')
+            customRun(eveningStart, eveningEnd, appointmentLength)
         elif value == 3:
             exit()
         else:
