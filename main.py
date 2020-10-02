@@ -1,13 +1,11 @@
 import time
-# TO DO LIST
-# Student timings constraint
-# CSV input - Extension google form -> CSV -> Python - DOING
-# Priority weightings constraint
 # Add breaks - FIXING
 
 # Hardcoded variables
 slots = []
 excluded = []
+breaklist = []
+higherbreaklist = []
 teacherlist = ['Mr.Walter','Mr.Jeff','Ms.Gary','Ms.Onion']
 studentTeacher = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.Onion,Mr.Walter',
                       'Gee':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Jack':'Mr.Jeff,Ms.Onion,Mr.Walter',
@@ -71,8 +69,12 @@ def checkMenuValues(value):
         print('')
         menu()
 
+# Redirects custom run to main slot-sorter, changing the default values
 def customRun(eveningStart,eveningEnd,appointmentLength):
     slotSorter(teacherlist,studentTeacher,eveningStart,eveningEnd,appointmentLength)
+
+def getData(filename):
+    pass
 
 # Outputs slots
 def outputSlots():
@@ -96,7 +98,9 @@ def createSlot(teacher,student):
     slots.append((teacher+" : "+student))
     studentTeacher[student] = studentTeacher[student].replace(teacher + ',', '')
     excludeStudent(student)
+    breaklist.append(student)
 
+# Checks if student hasn't already had an appointment with teacher
 def checkSlot(teacher,student):
     if len(slots) == 0:
         return True
@@ -121,6 +125,9 @@ def checkExcluded(student):
 def clearExcluded():
     excluded.clear()
 
+def clearLowBreak():
+    breaklist.clear()
+
 # Slot heading - Formats time in a user-friendly manner
 def slotHeading(slot,StartTime,appointmentLength):
     appointmentDivisible = appointmentLength/60
@@ -138,15 +145,15 @@ def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentL
     TotalSlots = int((eveningEnd - eveningStart) * 12)
     print('Number of slots : ' + str(TotalSlots))
     for i in range(TotalSlots):
-        print('---')
-        print(students)
         clearExcluded()
+        higherbreaklist = breaklist
+        clearLowBreak()
         slotHeading(i,eveningStart,appointmentLength)
         for teacher in teacherList:
             slotCreated = False
             for student in students.keys():
                 if teacher in students[student]:
-                    if not checkExcluded(student) and slotCreated == False and checkSlot(teacher,student):
+                    if not checkExcluded(student) and slotCreated == False and checkSlot(teacher,student) and student not in higherbreaklist:
                         createSlot(teacher,student)
                         slotCreated = True
                         break

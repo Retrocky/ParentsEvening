@@ -1,8 +1,10 @@
 import csv
+import pandas
 
-'''
+
 filename = 'ParentsEvening.csv'
 
+'''
 reader = csv.DictReader(open(filename))
 for raw in reader:
     #print(raw)
@@ -15,7 +17,14 @@ class Student:
         self.eveningdeparture = eveningdeparture
 '''
 
+'''
 breaklist = ['Harry','Jack']
 print(breaklist)
 breaklist.remove('Harry')
 print(breaklist)
+'''
+
+file = pandas.read_csv(filename)
+data = pandas.DataFrame(file)
+
+data.head()
