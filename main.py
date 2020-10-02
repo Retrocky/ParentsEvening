@@ -1,5 +1,4 @@
 import time
-# Add breaks - FIXING
 
 # Hardcoded variables
 slots = []
@@ -143,10 +142,10 @@ def slotHeading(slot,StartTime,appointmentLength):
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentLength=5):
     TotalSlots = int((eveningEnd - eveningStart) * 12)
-    print('Number of slots : ' + str(TotalSlots))
+    print('Total slots : '+str(TotalSlots))
     for i in range(TotalSlots):
         clearExcluded()
-        higherbreaklist = breaklist
+        higherbreaklist = breaklist.copy()
         clearLowBreak()
         slotHeading(i,eveningStart,appointmentLength)
         for teacher in teacherList:
