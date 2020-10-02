@@ -1,5 +1,7 @@
 import time
 
+# Import CSV data
+
 # Hardcoded variables
 slots = []
 excluded = []

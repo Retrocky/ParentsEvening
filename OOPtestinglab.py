@@ -24,7 +24,19 @@ breaklist.remove('Harry')
 print(breaklist)
 '''
 
-file = pandas.read_csv(filename)
-data = pandas.DataFrame(file)
+dict = {}
+startTimes = {}
+endTimes = {}
 
-data.head()
+data = pandas.read_csv(filename)
+
+
+for i in range(len(data.index)):
+    item = data.loc[i]
+    dict[item[0]] = item[1]
+    startTimes[item[0]] = item[2]
+    endTimes[item[0]] = item[3]
+
+print(dict)
+print(startTimes)
+print(endTimes)
