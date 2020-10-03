@@ -9,12 +9,6 @@ excluded = []
 breaklist = []
 higherbreaklist = []
 teacherlist = ['Mr.Walter','Mr.Jeff','Ms.Gary','Ms.Onion']
-'''
-studentTeacher = {'Will':'Mr.Walter,Ms.Gary,Mr.Jeff,Ms.Onion','Bob':'Mr.Jeff,Ms.Onion,Mr.Walter',
-                      'Gee':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary','Jack':'Mr.Jeff,Ms.Onion,Mr.Walter',
-                      'Harry':'Ms.Onion,Ms.Gary','Alice':'Ms.Gary,Ms.Gary','Emily':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary',
-                      'Ben':'Mr.Walter,Mr.Jeff,Ms.Onion,Ms.Gary'}
-'''
 studentTeacher = {}
 startTimes = {}
 endTimes = {}
@@ -148,9 +142,8 @@ def clearLowBreak():
     breaklist.clear()
 
 # Slot heading - Formats time in a user-friendly manner
-def slotHeading(slot,StartTime,appointmentLength):
-    appointmentDivisible = appointmentLength/60
-    time = StartTime+appointmentDivisible*slot
+def slotHeading(slot,startTime,appointmentLength):
+    time = decimalTime(slot,startTime,appointmentLength)
     hours = int(time)
     minutes = (time * 60) % 60
     minutes = str(int(minutes.__round__()))
@@ -159,11 +152,17 @@ def slotHeading(slot,StartTime,appointmentLength):
     time = str(hours)+':'+str(minutes)
     slots.append('Slot : '+str(slot)+' Time : '+str(time))
 
+def decimalTime(slot,startTime,appointmentLength):
+    appointmentDivisible = appointmentLength/60
+    time = startTime+appointmentDivisible*slot
+    return time
+
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentLength=5):
     TotalSlots = int((eveningEnd - eveningStart) * 12)
     print('Total slots : '+str(TotalSlots))
     for i in range(TotalSlots):
+        decTime = decimalTime(i,eveningStart,appointmentLength)
         clearExcluded()
         higherbreaklist = breaklist.copy()
         clearLowBreak()
@@ -172,10 +171,12 @@ def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentL
             slotCreated = False
             for student in students.keys():
                 if teacher in students[student]:
-                    if not checkExcluded(student) and slotCreated == False and checkSlot(teacher,student) and student not in higherbreaklist:
+                    # Optimal solution
+                    if not checkExcluded(student) and slotCreated == False and checkSlot(teacher,student) and student not in higherbreaklist and startTimes[student] <= decTime and endTimes[student] > decTime:
                         createSlot(teacher,student)
                         slotCreated = True
                         break
+            # Constraints don't allow anyone or all appointments have been made
             if slotCreated == False:
                 emptySlot(teacher)
     outputSlots()
