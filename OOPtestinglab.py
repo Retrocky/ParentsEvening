@@ -1,40 +1,21 @@
-import csv
-import pandas
+dict = {'Will':1,'Bob':3,'Gee':2,'Harry':3}
+sortedList = []
+flipped = {}
 
+for key, value in dict.items():
+    if value not in flipped:
+        flipped[value] = [key]
+    else:
+        flipped[value].append(key)
 
-filename = 'ParentsEvening.csv'
+for weight in range(1,4):
+    for i in range(len(flipped[weight])):
+        sortedList.append(flipped[weight][i])
 
-'''
-reader = csv.DictReader(open(filename))
-for raw in reader:
-    #print(raw)
+print(sortedList)
+new = []
 
-class Student:
-    def __init__(self,name,teachers,eveningarrival,eveningdeparture):
-        self.name = name
-        self.teachers = teachers
-        self.eveningarrival = eveningarrival
-        self.eveningdeparture = eveningdeparture
-'''
+for i in reversed(sortedList):
+    new.append(i)
 
-'''
-breaklist = ['Harry','Jack']
-print(breaklist)
-breaklist.remove('Harry')
-print(breaklist)
-'''
-
-dict = {}
-startTimes = {}
-endTimes = {}
-
-data = pandas.read_csv(filename)
-for i in range(len(data.index)):
-    item = data.loc[i]
-    dict[item[0]] = item[1]
-    startTimes[item[0]] = item[2]
-    endTimes[item[0]] = item[3]
-
-print(dict)
-print(startTimes)
-print(endTimes)
+print(new)

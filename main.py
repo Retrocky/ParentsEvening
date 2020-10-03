@@ -1,7 +1,7 @@
 import time
 import pandas
 
-# Import CSV data
+# Priority weightings constraint
 
 # Hardcoded variables
 slots = []
@@ -89,6 +89,13 @@ def getData(filename):
         startTimes[item[0]] = item[2]
         endTimes[item[0]] = item[3]
 
+def getPriority(student,studentTeacher,reqTeacher):
+    teachers = str(studentTeacher[student]).split(',')
+    for teacher in teachers:
+        if reqTeacher in teacher:
+            priority = (teacher.split('('))[1][0]
+            return priority
+
 # Outputs slots
 def outputSlots():
     print('='*100)
@@ -157,11 +164,31 @@ def decimalTime(slot,startTime,appointmentLength):
     time = startTime+appointmentDivisible*slot
     return time
 
+def prioritySorter(priorityDict):
+    sortedList = []
+    flipped = {}
+    for key, value in priorityDict.items():
+        if value not in flipped:
+            flipped[value] = [key]
+        else:
+            flipped[value].append(key)
+    for weight in range(1, 4):
+        try:
+            for i in range(len(flipped[weight])):
+                sortedList.append(flipped[weight][i])
+        except KeyError:
+            pass
+    new = []
+    for i in reversed(sortedList):
+        new.append(i)
+    return new
+
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentLength=5):
     TotalSlots = int((eveningEnd - eveningStart) * 12)
     print('Total slots : '+str(TotalSlots))
     for i in range(TotalSlots):
+        priorities = {}
         decTime = decimalTime(i,eveningStart,appointmentLength)
         clearExcluded()
         higherbreaklist = breaklist.copy()
@@ -171,12 +198,17 @@ def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentL
             slotCreated = False
             for student in students.keys():
                 if teacher in students[student]:
-                    # Optimal solution
-                    if not checkExcluded(student) and slotCreated == False and checkSlot(teacher,student) and student not in higherbreaklist and startTimes[student] <= decTime and endTimes[student] > decTime:
-                        createSlot(teacher,student)
-                        slotCreated = True
-                        break
-            # Constraints don't allow anyone or all appointments have been made
+                    priorities[student] = getPriority(student,studentTeacher,teacher)
+            studentPriorities = prioritySorter(priorities)
+            # Nothing in the list!
+            print(studentPriorities)
+            for student in studentPriorities:
+                # Optimal solution
+                if not checkExcluded(student) and slotCreated == False and checkSlot(teacher,student) and student not in higherbreaklist and startTimes[student] <= decTime and endTimes[student] > decTime:
+                    createSlot(teacher, student)
+                    slotCreated = True
+                    break
+            # Comes here if constraints don't allow anyone or all appointments have been made
             if slotCreated == False:
                 emptySlot(teacher)
     outputSlots()
