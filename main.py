@@ -3,7 +3,6 @@ import pandas
 
 # Get teachers from csv
 # If there have been two empty slots for all teachers in a row, end evening
-# Make time work with different appointment lengths other than 5
 
 # Hardcoded variables
 slots = []
@@ -186,7 +185,7 @@ def prioritySorter(priorityDict):
 
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentLength=5):
-    TotalSlots = int((eveningEnd - eveningStart) * 12)
+    TotalSlots = int((eveningEnd - eveningStart) * (60/appointmentLength))
     print('Total slots : '+str(TotalSlots))
     for i in range(TotalSlots):
         print(studentTeacher)
