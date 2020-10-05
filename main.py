@@ -94,7 +94,7 @@ def getPriority(student,studentTeacher,reqTeacher):
     for teacher in teachers:
         if reqTeacher in teacher:
             priority = (teacher.split('('))[1][0]
-            return priority
+            return int(priority)
 
 # Outputs slots
 def outputSlots():
@@ -164,6 +164,7 @@ def decimalTime(slot,startTime,appointmentLength):
     time = startTime+appointmentDivisible*slot
     return time
 
+# Broken here
 def prioritySorter(priorityDict):
     sortedList = []
     flipped = {}
@@ -173,11 +174,9 @@ def prioritySorter(priorityDict):
         else:
             flipped[value].append(key)
     for weight in range(1, 4):
-        try:
+        if weight in list(flipped.keys()):
             for i in range(len(flipped[weight])):
                 sortedList.append(flipped[weight][i])
-        except KeyError:
-            pass
     new = []
     for i in reversed(sortedList):
         new.append(i)
@@ -200,8 +199,6 @@ def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentL
                 if teacher in students[student]:
                     priorities[student] = getPriority(student,studentTeacher,teacher)
             studentPriorities = prioritySorter(priorities)
-            # Nothing in the list!
-            print(studentPriorities)
             for student in studentPriorities:
                 # Optimal solution
                 if not checkExcluded(student) and slotCreated == False and checkSlot(teacher,student) and student not in higherbreaklist and startTimes[student] <= decTime and endTimes[student] > decTime:
