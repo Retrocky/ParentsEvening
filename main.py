@@ -13,9 +13,10 @@ studentTeacher = {}
 startTimes = {}
 endTimes = {}
 
+
 # Main menu UI
 def menu():
-    print('+'*100)
+    print('+' * 100)
     print('')
     print('Parents Evening Scheduler')
     print('')
@@ -24,8 +25,9 @@ def menu():
     print('3 - Exit')
     print('')
     value = input('Enter choice : ')
-    print('+'*100)
+    print('+' * 100)
     checkMenuValues(value)
+
 
 # Checks / validates menu choices and redirects to correct function.
 def checkMenuValues(value):
@@ -33,7 +35,7 @@ def checkMenuValues(value):
         value = int(value)
         if value == 1:
             getData('ParentsEvening.csv')
-            slotSorter(teacherList,studentTeacher)
+            slotSorter(teacherList, studentTeacher)
         elif value == 2:
             print(' Custom run')
             print('')
@@ -77,9 +79,11 @@ def checkMenuValues(value):
         print('')
         menu()
 
+
 # Redirects custom run to main slot-sorter, changing the default values
-def customRun(eveningStart,eveningEnd,appointmentLength):
-    slotSorter(teacherList,studentTeacher,eveningStart,eveningEnd,appointmentLength)
+def customRun(eveningStart, eveningEnd, appointmentLength):
+    slotSorter(teacherList, studentTeacher, eveningStart, eveningEnd, appointmentLength)
+
 
 def getData(filename):
     data = pandas.read_csv(filename)
@@ -92,50 +96,57 @@ def getData(filename):
         startTimes[item[0]] = item[2]
         endTimes[item[0]] = item[3]
 
-def getPriority(student,studentTeacher,reqTeacher):
+
+def getPriority(student, studentTeacher, reqTeacher):
     teachers = str(studentTeacher[student]).split(',')
     for teacher in teachers:
         if reqTeacher in teacher:
             priority = (teacher.split('('))[1][0]
             return int(priority)
 
+
 # Outputs slots
 def outputSlots():
-    print('='*100)
+    print('=' * 100)
     for item in slots:
         if 'Slot : ' in item:
             time.sleep(0.5)
             print("")
-            print('-'*50)
+            print('-' * 50)
             print(item)
         else:
             print(item)
-    print('='*100)
+    print('=' * 100)
+
 
 # Creates a break for the teacher if the slot is empty
 def emptySlot(teacher):
-    slots.append((teacher+" : BREAK"))
+    slots.append((teacher + " : BREAK"))
+
 
 # Creates slots and excludes students from another appointment that time slot
-def createSlot(teacher,student):
-    slots.append((teacher+" : "+student))
+def createSlot(teacher, student):
+    slots.append((teacher + " : " + student))
     studentTeacher[student] = studentTeacher[student].replace(teacher + ',', '')
     excludeStudent(student)
     breakList.append(student)
 
+
 # Checks if student hasn't already had an appointment with teacher
-def checkSlot(teacher,student):
+def checkSlot(teacher, student):
     if len(slots) == 0:
         return True
     else:
         for appointment in slots:
-            if (teacher+" : "+student) == appointment:
+            if (teacher + " : " + student) == appointment:
                 return False
         return True
+
 
 # Excludes student from another appointment during the current slot
 def excludeStudent(student):
     excluded.append(student)
+
 
 # Checks if a student is excluded from this round
 def checkExcluded(student):
@@ -144,28 +155,33 @@ def checkExcluded(student):
     else:
         return False
 
+
 # Clears the excluded students at the start of a new slot
 def clearExcluded():
     excluded.clear()
 
+
 def clearLowBreak():
     breakList.clear()
 
+
 # Slot heading - Formats time in a user-friendly manner
-def slotHeading(slot,startTime,appointmentLength):
-    time = decimalTime(slot,startTime,appointmentLength)
+def slotHeading(slot, startTime, appointmentLength):
+    time = decimalTime(slot, startTime, appointmentLength)
     hours = int(time)
     minutes = (time * 60) % 60
     minutes = str(int(minutes.__round__()))
     if len(minutes) == 1:
-        minutes = '0'+minutes
-    time = str(hours)+':'+str(minutes)
-    slots.append('Slot : '+str(slot)+' Time : '+str(time))
+        minutes = '0' + minutes
+    time = str(hours) + ':' + str(minutes)
+    slots.append('Slot : ' + str(slot) + ' Time : ' + str(time))
 
-def decimalTime(slot,startTime,appointmentLength):
-    appointmentDivisible = appointmentLength/60
-    time = startTime+appointmentDivisible*slot
+
+def decimalTime(slot, startTime, appointmentLength):
+    appointmentDivisible = appointmentLength / 60
+    time = startTime + appointmentDivisible * slot
     return time
+
 
 # Sorts students from highest priority to lowest priority
 def prioritySorter(priorityDict):
@@ -185,26 +201,27 @@ def prioritySorter(priorityDict):
         new.append(i)
     return new
 
+
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentLength=5):
-    TotalSlots = int((eveningEnd - eveningStart) * (60/appointmentLength))
-    print('Total slots : '+str(TotalSlots))
+    TotalSlots = int((eveningEnd - eveningStart) * (60 / appointmentLength))
+    print('Total slots : ' + str(TotalSlots))
     for i in range(TotalSlots):
         priorities = {}
-        decTime = decimalTime(i,eveningStart,appointmentLength)
+        decTime = decimalTime(i, eveningStart, appointmentLength)
         clearExcluded()
         higherbreaklist = breakList.copy()
         clearLowBreak()
-        slotHeading(i,eveningStart,appointmentLength)
+        slotHeading(i, eveningStart, appointmentLength)
         for teacher in teacherList:
             slotCreated = False
             for student in students.keys():
                 if teacher in students[student]:
-                    priorities[student] = getPriority(student,studentTeacher,teacher)
+                    priorities[student] = getPriority(student, studentTeacher, teacher)
             studentPriorities = prioritySorter(priorities)
             for student in studentPriorities:
                 # Optimal solution
-                if not checkExcluded(student) and slotCreated == False and checkSlot(teacher,student) and student not in higherbreaklist and startTimes[student] <= decTime and endTimes[student] > decTime:
+                if not checkExcluded(student) and slotCreated == False and checkSlot(teacher, student) and student not in higherbreaklist and startTimes[student] <= decTime < endTimes[student]:
                     createSlot(teacher, student)
                     slotCreated = True
                     break
@@ -212,6 +229,7 @@ def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentL
             if slotCreated == False:
                 emptySlot(teacher)
     outputSlots()
+
 
 # Starts the program
 if __name__ == '__main__':
