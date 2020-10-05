@@ -1,6 +1,10 @@
 import time
 import pandas
 
+# Get teachers from csv
+# If there have been two empty slots for all teachers in a row, end evening
+# Make time work with different appointment lengths other than 5
+
 # Hardcoded variables
 slots = []
 excluded = []
@@ -185,6 +189,7 @@ def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentL
     TotalSlots = int((eveningEnd - eveningStart) * 12)
     print('Total slots : '+str(TotalSlots))
     for i in range(TotalSlots):
+        print(studentTeacher)
         priorities = {}
         decTime = decimalTime(i,eveningStart,appointmentLength)
         clearExcluded()
