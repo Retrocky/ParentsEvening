@@ -1,8 +1,6 @@
 import time
 import pandas
 
-# Priority weightings constraint
-
 # Hardcoded variables
 slots = []
 excluded = []
@@ -164,7 +162,7 @@ def decimalTime(slot,startTime,appointmentLength):
     time = startTime+appointmentDivisible*slot
     return time
 
-# Broken here
+# Sorts students from highest priority to lowest priority
 def prioritySorter(priorityDict):
     sortedList = []
     flipped = {}

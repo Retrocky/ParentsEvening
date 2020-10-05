@@ -1,4 +1,25 @@
 Student,Teachers,EveningArrival,EveningDeparture
 Will,"Mr.Jeff (1), Mr.Walter (3), Ms.Gary (1), Ms.Onion (2)",7.5,8
 Bob,"Mr.Jeff (3), Mr.Walter (3), Ms.Gary (2), Ms.Onion (2)",7,8.5
-Gee,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (3)",8,8.5
+Gee,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (3)",6,8.5
+Jack,"Mr.Jeff (3), Mr.Walter (1), Ms.Gary (1), Ms.Onion (1)",6,8.5
+Harry,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (3)",6,8.5
+Emily,"Mr.Jeff (2), Mr.Walter (1), Ms.Gary (3), Ms.Onion (2)",6,8.5
+Peter,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (3)",6,8.5
+Oliver,"Mr.Jeff (3), Mr.Walter (1), Ms.Gary (2), Ms.Onion (1)",6,8.5
+Brian,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (1)",6,8.5
+Freddie,"Mr.Jeff (3), Mr.Walter (2), Ms.Gary (1), Ms.Onion (1)",6,8.5
+Ben,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (1)",6,8.5
+Alice,"Mr.Jeff (1), Mr.Walter (3), Ms.Gary (1), Ms.Onion (1)",6,8.5
+Harry.H,"Mr.Jeff (1), Mr.Walter (3), Ms.Gary (1), Ms.Onion (2)",7.5,8
+Bob.L,"Mr.Jeff (3), Mr.Walter (3), Ms.Gary (2), Ms.Onion (2)",7,8.5
+Gee.P,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (3)",6,8.5
+Jack.E,"Mr.Jeff (3), Mr.Walter (1), Ms.Gary (1), Ms.Onion (1)",6,8.5
+Harry.W,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (3)",6,8.5
+Emily.P,"Mr.Jeff (2), Mr.Walter (1), Ms.Gary (3), Ms.Onion (2)",6,8.5
+Peter.V,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (3)",6,8.5
+Oliver.B,"Mr.Jeff (3), Mr.Walter (1), Ms.Gary (2), Ms.Onion (1)",6,8.5
+Brian.X,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (1)",6,8.5
+Freddie.Z,"Mr.Jeff (3), Mr.Walter (2), Ms.Gary (1), Ms.Onion (1)",6,8.5
+Ben.A,"Mr.Jeff (1), Mr.Walter (2), Ms.Gary (1), Ms.Onion (1)",6,8.5
+Alice.S,"Mr.Jeff (1), Mr.Walter (3), Ms.Gary (1), Ms.Onion (1)",6,8.5
