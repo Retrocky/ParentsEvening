@@ -208,7 +208,7 @@ def prioritySorter(priorityDict):
 
 def endEvening():
     slots.append('End of evening')
-    teacherSlots()
+    teacherSlots('Mr.Jeff')
 
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentLength=5):
@@ -220,6 +220,7 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
     for i in range(TotalSlots):
         if len(teacherList) == 0:
             endEvening()
+            break
         priorities = {}
         decTime = decimalTime(i, eveningStart, appointmentLength)
         clearExcluded()
@@ -247,12 +248,23 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
                     teacherList.remove(teacher)
     #outputSlots()
 
-def teacherSlots():
-    print('HERE')
-    print(staticTeachers)
-    for teacher in teacherList:
-        print(teacher,'SURVIVED')
+def teacherSlots(teacher):
+    temp = ''
+    teacherSlots = {}
+    for item in slots:
+        if 'Slot : ' in item:
+            temp = item
+        elif teacher+' : ' in item:
+            teacherSlots[temp] = item
+    emailTeacher(teacher,teacherSlots)
 
+def emailTeacher(teacher,data):
+    message = ''
+    for slot in data.keys():
+        message += str(slot)+'\n'
+        message += str(data[slot])+'\n'
+        message += '\n'
+    print(message)
 
 
 # Starts the program
