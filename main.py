@@ -1,7 +1,7 @@
 import time
 import pandas
 
-# If there have been two empty slots for all teachers in a row, end evening
+# Google form
 
 # Hardcoded variables
 slots = []
@@ -9,6 +9,7 @@ excluded = []
 breakList = []
 higherBreakList = []
 teacherList = []
+staticTeachers = []
 studentTeacher = {}
 startTimes = {}
 endTimes = {}
@@ -20,8 +21,8 @@ def menu():
     print('')
     print('Parents Evening Scheduler')
     print('')
-    print('1 - Run algorithm with default settings')
-    print('2 - Custom run')
+    print('1 - Run')
+    print('2 - Configure')
     print('3 - Exit')
     print('')
     value = input('Enter choice : ')
@@ -90,6 +91,8 @@ def getData(filename):
     teachers = str(data['Teachers'][0])
     for teacher in teachers.split(','):
         teacherList.append(teacher.split('(')[0].strip())
+    global staticTeachers
+    staticTeachers = teacherList.copy()
     for i in range(len(data.index)):
         item = data.loc[i]
         studentTeacher[item[0]] = item[1]
@@ -104,20 +107,22 @@ def getPriority(student, studentTeacher, reqTeacher):
             priority = (teacher.split('('))[1][0]
             return int(priority)
 
-
 # Outputs slots
 def outputSlots():
     print('=' * 100)
     for item in slots:
         if 'Slot : ' in item:
-            time.sleep(0.5)
+            time.sleep(0.1)
             print("")
             print('-' * 50)
             print(item)
+        elif item == 'End of evening':
+            print('')
+            print('End of evening')
+            print('')
         else:
             print(item)
     print('=' * 100)
-
 
 # Creates a break for the teacher if the slot is empty
 def emptySlot(teacher):
@@ -201,12 +206,20 @@ def prioritySorter(priorityDict):
         new.append(i)
     return new
 
+def endEvening():
+    slots.append('End of evening')
+    teacherSlots()
 
 # Loops through each slot with each teacher and matches students to their teachers needed
-def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentLength=5):
+def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentLength=5):
+    potentialEnd = {}
+    for teacher in teacherList:
+        potentialEnd[teacher] = 0
     TotalSlots = int((eveningEnd - eveningStart) * (60 / appointmentLength))
     print('Total slots : ' + str(TotalSlots))
     for i in range(TotalSlots):
+        if len(teacherList) == 0:
+            endEvening()
         priorities = {}
         decTime = decimalTime(i, eveningStart, appointmentLength)
         clearExcluded()
@@ -224,11 +237,22 @@ def slotSorter(teacherList, students, eveningStart=7, eveningEnd=8, appointmentL
                 if not checkExcluded(student) and slotCreated == False and checkSlot(teacher, student) and student not in higherbreaklist and startTimes[student] <= decTime < endTimes[student]:
                     createSlot(teacher, student)
                     slotCreated = True
+                    potentialEnd[teacher] = 0
                     break
             # Comes here if constraints don't allow anyone or all appointments have been made
             if slotCreated == False:
+                potentialEnd[teacher] += 1
                 emptySlot(teacher)
-    outputSlots()
+                if potentialEnd[teacher] == 2:
+                    teacherList.remove(teacher)
+    #outputSlots()
+
+def teacherSlots():
+    print('HERE')
+    print(staticTeachers)
+    for teacher in teacherList:
+        print(teacher,'SURVIVED')
+
 
 
 # Starts the program
