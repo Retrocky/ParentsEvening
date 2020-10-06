@@ -1,6 +1,7 @@
 import time
 import pandas
 import yagmail
+from ParentsEvening import mail
 
 # Google form
 
@@ -262,13 +263,14 @@ def teacherSlots(teacher):
     emailTeacher(teacher,teacherSlots)
 
 def emailTeacher(teacher,data):
-    message = 'Hello '+teacher+', here are your appointments :'+'\n'
+    email = str(input('Please enter '+teacher+'\'s email address : '))
+    message = 'Hello '+teacher+', here are your appointments :'+'\n'+'\n'
     for slot in data.keys():
         message += str(slot)+'\n'
         message += str(data[slot])+'\n'
         message += '\n'
-    yag = yagmail.SMTP('parentseveningappointments@gmail.com','parentsevening123')
-    yag.send('william.nutbrown@abingdon.org.uk','Parents Evening Appointments',message)
+    yag = yagmail.SMTP(mail.email,mail.password)
+    yag.send(email,'Parents Evening Appointments',message)
 
 # Starts the program
 if __name__ == '__main__':
