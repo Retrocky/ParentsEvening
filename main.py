@@ -3,7 +3,7 @@ import pandas
 import yagmail
 from ParentsEvening import mail
 
-# Google form
+# GUI
 
 # Hardcoded variables
 slots = []
@@ -15,6 +15,8 @@ staticTeachers = []
 studentTeacher = {}
 startTimes = {}
 endTimes = {}
+studentEmails = {}
+teacherEmails = {}
 
 
 # Main menu UI
@@ -95,19 +97,27 @@ def getData(filename):
         teacherList.append(teacher.split('(')[0].strip())
     global staticTeachers
     staticTeachers = teacherList.copy()
-    for i in range(len(data.index)):
+    for i in range(1,len(data.index)):
         item = data.loc[i]
         studentTeacher[item[0]] = item[1]
-        startTimes[item[0]] = item[2]
-        endTimes[item[0]] = item[3]
+        startTimes[item[0]] = float(item[2])
+        endTimes[item[0]] = float(item[3])
+        studentEmails[item[0]] = item[4]
+    for item in data.loc[0]:
+        if item != 'x':
+            temp = item.split(',')
+            for email in temp:
+                teacher = email.split('(')[0].strip()
+                teacherEmails[teacher] = email.split('(')[1][:-1]
 
-
+# Returns the priority weighting for a teacher by the respective student
 def getPriority(student, studentTeacher, reqTeacher):
     teachers = str(studentTeacher[student]).split(',')
     for teacher in teachers:
         if reqTeacher in teacher:
             priority = (teacher.split('('))[1][0]
             return int(priority)
+
 
 # Outputs slots
 def outputSlots():
@@ -210,7 +220,6 @@ def prioritySorter(priorityDict):
 
 def endEvening():
     slots.append('End of evening')
-    print(staticTeachers)
     for teacher in staticTeachers:
         teacherSlots(teacher)
 
@@ -250,7 +259,6 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
                 emptySlot(teacher)
                 if potentialEnd[teacher] == 2:
                     teacherList.remove(teacher)
-    #outputSlots()
 
 def teacherSlots(teacher):
     temp = ''
@@ -263,14 +271,13 @@ def teacherSlots(teacher):
     emailTeacher(teacher,teacherSlots)
 
 def emailTeacher(teacher,data):
-    email = str(input('Please enter '+teacher+'\'s email address : '))
     message = 'Hello '+teacher+', here are your appointments :'+'\n'+'\n'
     for slot in data.keys():
         message += str(slot)+'\n'
         message += str(data[slot])+'\n'
         message += '\n'
     yag = yagmail.SMTP(mail.email,mail.password)
-    yag.send(email,'Parents Evening Appointments',message)
+    yag.send(teacherEmails[teacher],'Parents Evening Appointments',message)
 
 # Starts the program
 if __name__ == '__main__':
