@@ -222,6 +222,9 @@ def endEvening():
     slots.append('End of evening')
     for teacher in staticTeachers:
         teacherSlots(teacher)
+    for student in studentTeacher.keys():
+        studentSlots(student)
+    adminPortal()
 
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentLength=5):
@@ -270,6 +273,18 @@ def teacherSlots(teacher):
             teacherSlots[temp] = item
     emailTeacher(teacher,teacherSlots)
 
+def studentSlots(student):
+    temp = ''
+    studentSlots = {}
+    for item in slots:
+        if 'Slot : ' in item:
+            temp = item
+        elif ' : '+student in item:
+            if item.split(':')[1].strip() == student:
+                studentSlots[temp] = item
+    emailStudent(student,studentSlots)
+
+
 def emailTeacher(teacher,data):
     message = 'Hello '+teacher+', here are your appointments :'+'\n'+'\n'
     for slot in data.keys():
@@ -277,7 +292,21 @@ def emailTeacher(teacher,data):
         message += str(data[slot])+'\n'
         message += '\n'
     yag = yagmail.SMTP(mail.email,mail.password)
-    yag.send(teacherEmails[teacher],'Parents Evening Appointments',message)
+    #yag.send(teacherEmails[teacher],'Parents Evening Appointments',message)
+
+def emailStudent(student,data):
+    message = 'Hello '+student+', here are your appointments :'+'\n'+'\n'
+    for slot in data.keys():
+        message += str(slot)+'\n'
+        message += str(data[slot])+'\n'
+        message += '\n'
+    yag = yagmail.SMTP(mail.email,mail.password)
+    #yag.send(studentEmails[student],'Parents Evening Appointments',message)
+
+
+def adminPortal():
+    print('OPTIMISATION SUCCESSFUL')
+    print(slots)
 
 # Starts the program
 if __name__ == '__main__':
