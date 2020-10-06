@@ -1,5 +1,6 @@
 import time
 import pandas
+import yagmail
 
 # Google form
 
@@ -208,7 +209,9 @@ def prioritySorter(priorityDict):
 
 def endEvening():
     slots.append('End of evening')
-    teacherSlots('Mr.Jeff')
+    print(staticTeachers)
+    for teacher in staticTeachers:
+        teacherSlots(teacher)
 
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentLength=5):
@@ -259,13 +262,13 @@ def teacherSlots(teacher):
     emailTeacher(teacher,teacherSlots)
 
 def emailTeacher(teacher,data):
-    message = ''
+    message = 'Hello '+teacher+', here are your appointments :'+'\n'
     for slot in data.keys():
         message += str(slot)+'\n'
         message += str(data[slot])+'\n'
         message += '\n'
-    print(message)
-
+    yag = yagmail.SMTP('parentseveningappointments@gmail.com','parentsevening123')
+    yag.send('william.nutbrown@abingdon.org.uk','Parents Evening Appointments',message)
 
 # Starts the program
 if __name__ == '__main__':
