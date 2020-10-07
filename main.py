@@ -2,6 +2,11 @@ import time
 import pandas
 import yagmail
 from ParentsEvening import mail
+from tkinter import *
+
+window = Tk()
+window.title('Parents Evening')
+window.mainloop()
 
 # GUI
 # Clean evening cutoff
@@ -19,6 +24,7 @@ startTimes = {}
 endTimes = {}
 studentEmails = {}
 teacherEmails = {}
+optimality = 100
 
 
 # Main menu UI
@@ -89,6 +95,8 @@ def checkMenuValues(value):
 
 # Redirects custom run to main slot-sorter, changing the default values
 def customRun(eveningStart, eveningEnd, appointmentLength):
+    global slots
+    slots = []
     slotSorter(teacherList, studentTeacher, eveningStart, eveningEnd, appointmentLength)
 
 
@@ -141,6 +149,8 @@ def outputSlots():
 # Creates a break for the teacher if the slot is empty
 def emptySlot(teacher):
     slots.append((teacher + " : BREAK"))
+    global optimality
+    optimality *= 0.95
 
 
 # Creates slots and excludes students from another appointment that time slot
@@ -149,6 +159,11 @@ def createSlot(teacher, student):
     studentTeacher[student] = studentTeacher[student].replace(teacher + ',', '')
     excludeStudent(student)
     breakList.append(student)
+    global optimality
+    optimality *= 1.05
+    if optimality > 100:
+        optimality = 100
+
 
 
 # Checks if student hasn't already had an appointment with teacher
@@ -375,7 +390,10 @@ def emailAdmin(email,data):
     yag.send(email,'Parents Evening Appointments',message)
 
 def analyse():
-    pass
+    global optimality
+    print('Overall optimality : '+str(int(optimality))+'%')
+    adminMenu()
+
 
 # Starts the program
 if __name__ == '__main__':
