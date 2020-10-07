@@ -4,8 +4,10 @@ import yagmail
 from ParentsEvening import mail
 
 # GUI
+# Clean evening cutoff
+# Calculate optimality
 
-# Hardcoded variables
+# Declaring variables
 slots = []
 excluded = []
 breakList = []
@@ -42,7 +44,7 @@ def checkMenuValues(value):
             getData('ParentsEvening.csv')
             slotSorter(teacherList, studentTeacher)
         elif value == 2:
-            print(' Custom run')
+            print('Custom run')
             print('')
             while True:
                 eveningStart = input('Evening start time : ')
@@ -306,7 +308,74 @@ def emailStudent(student,data):
 
 def adminPortal():
     print('OPTIMISATION SUCCESSFUL')
-    print(slots)
+    print('')
+    adminMenu()
+
+
+# Main menu UI
+def adminMenu():
+    print('+' * 100)
+    print('')
+    print('Admin portal')
+    print('')
+    print('1 - Output all appointments')
+    print('2 - Send all appointments to an email address')
+    print('3 - Configure & run again')
+    print('4 - View analytics')
+    print('5 - Exit')
+    print('')
+    value = input('Enter choice : ')
+    print('+' * 100)
+    checkAdminMenuValues(value)
+
+def checkAdminMenuValues(value):
+    try:
+        value = int(value)
+        if value == 1:
+            outputSlots()
+            time.sleep(1.5)
+            adminMenu()
+        elif value == 2:
+            email = str(input('Enter email address : '))
+            emailAdmin(email,slots)
+            print('Email sent.')
+            time.sleep(1)
+            adminMenu()
+        elif value == 3:
+            print('Restarting...')
+            time.sleep(0.25)
+            checkMenuValues(2)
+        elif value == 4:
+            print('Calculating analytics')
+            analyse()
+        elif value == 5:
+            print('Exiting program')
+            time.sleep(0.5)
+            exit()
+        else:
+            print('Invalid choice - Please try again.')
+            print('')
+            adminMenu()
+    except ValueError:
+        print('Enter a digit from 1 -> 3')
+        print('')
+        adminMenu()
+
+def emailAdmin(email,data):
+    message = 'Hello, here are all of the generated appointments :'+'\n'+'\n'
+    for slot in data:
+        if 'Slot : ' in slot:
+            message += '\n'
+            message += slot
+            message += '\n'
+        else:
+            message += str(slot)
+            message+= '\n'
+    yag = yagmail.SMTP(mail.email,mail.password)
+    yag.send(email,'Parents Evening Appointments',message)
+
+def analyse():
+    pass
 
 # Starts the program
 if __name__ == '__main__':
