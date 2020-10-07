@@ -19,6 +19,9 @@ endTimes = {}
 studentEmails = {}
 teacherEmails = {}
 optimality = 100
+totalSlots = 0
+breakNum = 0
+appointmentNum = 0
 
 
 # Main menu UI
@@ -144,17 +147,21 @@ def outputSlots():
 # Creates a break for the teacher if the slot is empty
 def emptySlot(teacher):
     slots.append((teacher + " : BREAK"))
+    global breakNum
     global optimality
     optimality *= 0.95
+    breakNum += 1
 
 
 # Creates slots and excludes students from another appointment that time slot
 def createSlot(teacher, student):
+    global appointmentNum
+    appointmentNum += 1
     slots.append((teacher + " : " + student))
     temp = studentTeacher[student].split(',')
-    for teacheriter in temp:
-        if teacher in teacheriter:
-            temp.pop(temp.index(teacheriter))
+    for teacherIter in temp:
+        if teacher in teacherIter:
+            temp.pop(temp.index(teacherIter))
     studentTeacher[student] = (',').join(temp)
     if studentTeacher[student] == '':
         studentTeacher.__delitem__(student)
@@ -250,9 +257,9 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
     potentialEnd = {}
     for teacher in teacherList:
         potentialEnd[teacher] = 0
-    TotalSlots = int((eveningEnd - eveningStart) * (60 / appointmentLength))
-    print('Total slots : ' + str(TotalSlots))
-    for i in range(TotalSlots):
+    totalSlots = int((eveningEnd - eveningStart) * (60 / appointmentLength))
+    print('Total slots : ' + str(totalSlots))
+    for i in range(totalSlots):
         if len(teacherList) == 0:
             endEvening()
             break
@@ -399,8 +406,18 @@ def emailAdmin(email,data):
     yag.send(email,'Parents Evening Appointments',message)
 
 def analyse():
-    global optimality
+    time.sleep(1)
+    global optimality, totalSlots, appointmentNum, breakNum
     print('Overall optimality : '+str(int(optimality))+'%')
+    print('')
+    print('Number of slots :',str(len(slots)))
+    print('')
+    print('Number of appointments :',str(appointmentNum))
+    print('')
+    print('Number of breaks :',str(breakNum))
+    print('')
+    print('Number of appointments not fulfilled :',str(len(studentTeacher)))
+    print('')
     adminMenu()
 
 # Starts the program
