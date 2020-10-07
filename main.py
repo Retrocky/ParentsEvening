@@ -4,7 +4,6 @@ import yagmail
 from ParentsEvening import mail
 
 # GUI
-# Clean evening cutoff
 
 # Declaring variables
 slots = []
@@ -289,7 +288,7 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
                 if potentialEnd[teacher] == 2:
                     remove = True
                     for student in list(studentTeacher.keys()):
-                        if teacher in studentTeacher[student]:
+                        if teacher in studentTeacher[student] and endTimes[student] > decTime:
                             remove = False
                     if remove == True:
                         teacherList.remove(teacher)
@@ -403,9 +402,10 @@ def emailAdmin(email,data):
             message += str(slot)
             message+= '\n'
     yag = yagmail.SMTP(mail.email,mail.password)
-    yag.send(email,'Parents Evening Appointments',message)
+    #yag.send(email,'Parents Evening Appointments',message)
 
 def analyse():
+    print('')
     time.sleep(1)
     global optimality, totalSlots, appointmentNum, breakNum
     print('Overall optimality : '+str(int(optimality))+'%')
