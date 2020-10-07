@@ -2,15 +2,9 @@ import time
 import pandas
 import yagmail
 from ParentsEvening import mail
-from tkinter import *
-
-window = Tk()
-window.title('Parents Evening')
-window.mainloop()
 
 # GUI
 # Clean evening cutoff
-# Calculate optimality
 
 # Declaring variables
 slots = []
@@ -146,6 +140,7 @@ def outputSlots():
             print(item)
     print('=' * 100)
 
+
 # Creates a break for the teacher if the slot is empty
 def emptySlot(teacher):
     slots.append((teacher + " : BREAK"))
@@ -156,25 +151,19 @@ def emptySlot(teacher):
 # Creates slots and excludes students from another appointment that time slot
 def createSlot(teacher, student):
     slots.append((teacher + " : " + student))
-    studentTeacher[student] = studentTeacher[student].replace(teacher + ',', '')
+    temp = studentTeacher[student].split(',')
+    for teacheriter in temp:
+        if teacher in teacheriter:
+            temp.pop(temp.index(teacheriter))
+    studentTeacher[student] = (',').join(temp)
+    if studentTeacher[student] == '':
+        studentTeacher.__delitem__(student)
     excludeStudent(student)
     breakList.append(student)
     global optimality
     optimality *= 1.05
     if optimality > 100:
         optimality = 100
-
-
-
-# Checks if student hasn't already had an appointment with teacher
-def checkSlot(teacher, student):
-    if len(slots) == 0:
-        return True
-    else:
-        for appointment in slots:
-            if (teacher + " : " + student) == appointment:
-                return False
-        return True
 
 
 # Excludes student from another appointment during the current slot
@@ -236,7 +225,20 @@ def prioritySorter(priorityDict):
     return new
 
 def endEvening():
+    global studentTeacher
+    global optimality
     slots.append('End of evening')
+    print('')
+    print('Outstanding requests : ')
+    print(studentTeacher)
+    priorityImpact = 0
+    for student in studentTeacher.keys():
+        for teacher in studentTeacher[student].split(','):
+            priorityImpact += getPriority(student,studentTeacher,teacher)
+    percentageDecrease = (0.05*len(studentTeacher)*priorityImpact)
+    if percentageDecrease > 0.9:
+        percentageDecrease = 0.9
+    optimality *= 1 - percentageDecrease
     for teacher in staticTeachers:
         teacherSlots(teacher)
     for student in studentTeacher.keys():
@@ -268,7 +270,7 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
             studentPriorities = prioritySorter(priorities)
             for student in studentPriorities:
                 # Optimal solution
-                if not checkExcluded(student) and slotCreated == False and checkSlot(teacher, student) and student not in higherbreaklist and startTimes[student] <= decTime < endTimes[student]:
+                if not checkExcluded(student) and slotCreated == False and student not in higherbreaklist and startTimes[student] <= decTime < endTimes[student]:
                     createSlot(teacher, student)
                     slotCreated = True
                     potentialEnd[teacher] = 0
@@ -278,7 +280,14 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
                 potentialEnd[teacher] += 1
                 emptySlot(teacher)
                 if potentialEnd[teacher] == 2:
-                    teacherList.remove(teacher)
+                    remove = True
+                    for student in list(studentTeacher.keys()):
+                        if teacher in studentTeacher[student]:
+                            remove = False
+                    if remove == True:
+                        teacherList.remove(teacher)
+    endEvening()
+
 
 def teacherSlots(teacher):
     temp = ''
@@ -393,7 +402,6 @@ def analyse():
     global optimality
     print('Overall optimality : '+str(int(optimality))+'%')
     adminMenu()
-
 
 # Starts the program
 if __name__ == '__main__':
