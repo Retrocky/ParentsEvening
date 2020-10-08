@@ -4,6 +4,8 @@ import yagmail
 from ParentsEvening import mail
 
 # GUI
+# Admin slot editing?
+
 
 # Declaring variables
 slots = []
@@ -145,7 +147,7 @@ def outputSlots():
 
 # Creates a break for the teacher if the slot is empty
 def emptySlot(teacher):
-    slots.append((teacher + " : BREAK"))
+    slots.append((f"{teacher} : BREAK"))
     global breakNum
     global optimality
     optimality *= 0.95
@@ -156,7 +158,7 @@ def emptySlot(teacher):
 def createSlot(teacher, student):
     global appointmentNum
     appointmentNum += 1
-    slots.append((teacher + " : " + student))
+    slots.append((f'{teacher} : {student}'))
     temp = studentTeacher[student].split(',')
     for teacherIter in temp:
         if teacher in teacherIter:
@@ -201,9 +203,9 @@ def slotHeading(slot, startTime, appointmentLength):
     minutes = (time * 60) % 60
     minutes = str(int(minutes.__round__()))
     if len(minutes) == 1:
-        minutes = '0' + minutes
-    time = str(hours) + ':' + str(minutes)
-    slots.append('Slot : ' + str(slot) + ' Time : ' + str(time))
+        minutes = f'0{minutes}'
+    time = f'{hours}:{minutes}'
+    slots.append(f'Slot : {slot} Time : {time}')
 
 
 def decimalTime(slot, startTime, appointmentLength):
@@ -225,18 +227,13 @@ def prioritySorter(priorityDict):
         if weight in list(flipped.keys()):
             for i in range(len(flipped[weight])):
                 sortedList.append(flipped[weight][i])
-    new = []
-    for i in reversed(sortedList):
-        new.append(i)
-    return new
+    return [i for i in reversed(sortedList)]
 
 def endEvening():
     global studentTeacher
     global optimality
-    slots.append('End of evening')
-    print('')
-    print('Outstanding requests : ')
-    print(studentTeacher)
+    slots.append('End of evening\n')
+    print(f'Outstanding requests : \n{studentTeacher}')
     priorityImpact = 0
     for student in studentTeacher.keys():
         for teacher in studentTeacher[student].split(','):
@@ -257,7 +254,7 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
     for teacher in teacherList:
         potentialEnd[teacher] = 0
     totalSlots = int((eveningEnd - eveningStart) * (60 / appointmentLength))
-    print('Total slots : ' + str(totalSlots))
+    print(f'Total slots : {totalSlots}')
     for i in range(totalSlots):
         if len(teacherList) == 0:
             endEvening()
@@ -318,44 +315,36 @@ def studentSlots(student):
 
 
 def emailTeacher(teacher,data):
-    message = 'Hello '+teacher+', here are your appointments :'+'\n'+'\n'
+    message = f'Hello {teacher}, here are your appointments :\n\n'
     for slot in data.keys():
-        message += str(slot)+'\n'
-        message += str(data[slot])+'\n'
-        message += '\n'
+        message += f'{slot}\n{data[slot]}\n\n'
     yag = yagmail.SMTP(mail.email,mail.password)
     #yag.send(teacherEmails[teacher],'Parents Evening Appointments',message)
 
 def emailStudent(student,data):
-    message = 'Hello '+student+', here are your appointments :'+'\n'+'\n'
+    message = f'Hello {student}, here are your appointments : \n\n'
     for slot in data.keys():
-        message += str(slot)+'\n'
-        message += str(data[slot])+'\n'
-        message += '\n'
+        message += f'{slot}\n{data[slot]}\n\n'
     yag = yagmail.SMTP(mail.email,mail.password)
     #yag.send(studentEmails[student],'Parents Evening Appointments',message)
 
 
 def adminPortal():
-    print('OPTIMISATION SUCCESSFUL')
-    print('')
+    print('OPTIMISATION SUCCESSFUL\n')
     adminMenu()
 
 
 # Main menu UI
 def adminMenu():
-    print('+' * 100)
-    print('')
-    print('Admin portal')
-    print('')
-    print('1 - Output all appointments')
+    print('\n'+'+' * 100)
+    print('\nAdmin portal')
+    print('\n1 - Output all appointments')
     print('2 - Send all appointments to an email address')
     print('3 - Configure & run again')
     print('4 - View analytics')
-    print('5 - Exit')
-    print('')
+    print('5 - Exit\n')
     value = input('Enter choice : ')
-    print('+' * 100)
+    print('\n'+'+' * 100)
     checkAdminMenuValues(value)
 
 def checkAdminMenuValues(value):
@@ -383,41 +372,30 @@ def checkAdminMenuValues(value):
             time.sleep(0.5)
             exit()
         else:
-            print('Invalid choice - Please try again.')
-            print('')
+            print('Invalid choice - Please try again.\n')
             adminMenu()
     except ValueError:
-        print('Enter a digit from 1 -> 3')
-        print('')
+        print('Enter a digit from 1 -> 3\n')
         adminMenu()
 
 def emailAdmin(email,data):
-    message = 'Hello, here are all of the generated appointments :'+'\n'+'\n'
+    message = 'Hello, here are all of the generated appointments : \n'
     for slot in data:
         if 'Slot : ' in slot:
-            message += '\n'
-            message += slot
-            message += '\n'
+            message += f'\n{slot}\n'
         else:
-            message += str(slot)
-            message+= '\n'
+            message += f'{slot}\n'
     yag = yagmail.SMTP(mail.email,mail.password)
-    #yag.send(email,'Parents Evening Appointments',message)
+    yag.send(email,'Parents Evening Appointments',message)
 
 def analyse():
-    print('')
     time.sleep(1)
     global optimality, totalSlots, appointmentNum, breakNum
-    print('Overall optimality : '+str(int(optimality))+'%')
-    print('')
-    print('Number of slots :',str(len(slots)))
-    print('')
-    print('Number of appointments :',str(appointmentNum))
-    print('')
-    print('Number of breaks :',str(breakNum))
-    print('')
-    print('Number of appointments not fulfilled :',str(len(studentTeacher)))
-    print('')
+    print(f'\nOverall optimality : {int(optimality)}%')
+    print(f'\nNumber of slots : {len(slots)}')
+    print(f'\nNumber of appointments : {appointmentNum}')
+    print(f'\nNumber of breaks : {breakNum}')
+    print(f'\nNumber of appointments not fulfilled : {len(studentTeacher)}')
     adminMenu()
 
 # Starts the program
