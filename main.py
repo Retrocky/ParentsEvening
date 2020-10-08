@@ -6,7 +6,6 @@ from ParentsEvening import mail
 # GUI
 # Admin slot editing?
 
-
 # Declaring variables
 slots = []
 excluded = []
@@ -15,6 +14,7 @@ higherBreakList = []
 teacherList = []
 staticTeachers = []
 studentTeacher = {}
+staticStudents = []
 startTimes = {}
 endTimes = {}
 studentEmails = {}
@@ -48,8 +48,7 @@ def checkMenuValues(value):
             getData('ParentsEvening.csv')
             slotSorter(teacherList, studentTeacher)
         elif value == 2:
-            print('Custom run')
-            print('')
+            print('Custom run\n')
             while True:
                 eveningStart = input('Evening start time : ')
                 try:
@@ -82,13 +81,9 @@ def checkMenuValues(value):
         elif value == 3:
             exit()
         else:
-            print('Invalid choice - Please try again.')
-            print('')
-            menu()
+            print('Invalid choice - Please try again.\n'), menu()
     except ValueError:
-        print('Enter a digit from 1 -> 3')
-        print('')
-        menu()
+        print('Enter a digit from 1 -> 3\n'), menu()
 
 
 # Redirects custom run to main slot-sorter, changing the default values
@@ -103,14 +98,15 @@ def getData(filename):
     teachers = str(data['Teachers'][0])
     for teacher in teachers.split(','):
         teacherList.append(teacher.split('(')[0].strip())
-    global staticTeachers
+    global staticTeachers, staticStudents
     staticTeachers = teacherList.copy()
-    for i in range(1,len(data.index)):
+    for i in range(1, len(data.index)):
         item = data.loc[i]
         studentTeacher[item[0]] = item[1]
         startTimes[item[0]] = float(item[2])
         endTimes[item[0]] = float(item[3])
         studentEmails[item[0]] = item[4]
+    staticStudents = list(studentTeacher.keys()).copy()
     for item in data.loc[0]:
         if item != 'x':
             temp = item.split(',')
@@ -118,13 +114,13 @@ def getData(filename):
                 teacher = email.split('(')[0].strip()
                 teacherEmails[teacher] = email.split('(')[1][:-1]
 
+
 # Returns the priority weighting for a teacher by the respective student
 def getPriority(student, studentTeacher, reqTeacher):
     teachers = str(studentTeacher[student]).split(',')
     for teacher in teachers:
         if reqTeacher in teacher:
-            priority = (teacher.split('('))[1][0]
-            return int(priority)
+            return int((teacher.split('('))[1][0])
 
 
 # Outputs slots
@@ -148,8 +144,7 @@ def outputSlots():
 # Creates a break for the teacher if the slot is empty
 def emptySlot(teacher):
     slots.append((f"{teacher} : BREAK"))
-    global breakNum
-    global optimality
+    global breakNum, optimality
     optimality *= 0.95
     breakNum += 1
 
@@ -181,10 +176,7 @@ def excludeStudent(student):
 
 # Checks if a student is excluded from this round
 def checkExcluded(student):
-    if student in excluded:
-        return True
-    else:
-        return False
+    return True if student in excluded else False
 
 
 # Clears the excluded students at the start of a new slot
@@ -229,24 +221,25 @@ def prioritySorter(priorityDict):
                 sortedList.append(flipped[weight][i])
     return [i for i in reversed(sortedList)]
 
+
 def endEvening():
-    global studentTeacher
-    global optimality
+    global studentTeacher, optimality, staticStudents
     slots.append('End of evening\n')
     print(f'Outstanding requests : \n{studentTeacher}')
     priorityImpact = 0
     for student in studentTeacher.keys():
         for teacher in studentTeacher[student].split(','):
-            priorityImpact += getPriority(student,studentTeacher,teacher)
-    percentageDecrease = (0.05*len(studentTeacher)*priorityImpact)
+            priorityImpact += getPriority(student, studentTeacher, teacher)
+    percentageDecrease = (0.05 * len(studentTeacher) * priorityImpact)
     if percentageDecrease > 0.9:
         percentageDecrease = 0.9
     optimality *= 1 - percentageDecrease
     for teacher in staticTeachers:
         teacherSlots(teacher)
-    for student in studentTeacher.keys():
+    for student in staticStudents:
         studentSlots(student)
     adminPortal()
+
 
 # Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentLength=5):
@@ -273,7 +266,8 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
             studentPriorities = prioritySorter(priorities)
             for student in studentPriorities:
                 # Optimal solution
-                if not checkExcluded(student) and slotCreated == False and student not in higherbreaklist and startTimes[student] <= decTime < endTimes[student]:
+                if not checkExcluded(student) and slotCreated == False and student not in higherbreaklist and \
+                        startTimes[student] <= decTime < endTimes[student]:
                     createSlot(teacher, student)
                     slotCreated = True
                     potentialEnd[teacher] = 0
@@ -298,9 +292,10 @@ def teacherSlots(teacher):
     for item in slots:
         if 'Slot : ' in item:
             temp = item
-        elif teacher+' : ' in item:
+        elif teacher + ' : ' in item:
             teacherSlots[temp] = item
-    emailTeacher(teacher,teacherSlots)
+    emailTeacher(teacher, teacherSlots)
+
 
 def studentSlots(student):
     temp = ''
@@ -308,25 +303,24 @@ def studentSlots(student):
     for item in slots:
         if 'Slot : ' in item:
             temp = item
-        elif ' : '+student in item:
+        elif ' : ' + student in item:
             if item.split(':')[1].strip() == student:
                 studentSlots[temp] = item
-    emailStudent(student,studentSlots)
+    emailStudent(student, studentSlots)
 
 
-def emailTeacher(teacher,data):
+def emailTeacher(teacher, data):
     message = f'Hello {teacher}, here are your appointments :\n\n'
     for slot in data.keys():
         message += f'{slot}\n{data[slot]}\n\n'
-    yag = yagmail.SMTP(mail.email,mail.password)
-    #yag.send(teacherEmails[teacher],'Parents Evening Appointments',message)
+    yagmail.SMTP(mail.email, mail.password).send(teacherEmails[teacher], 'Parents Evening Appointments', message)
 
-def emailStudent(student,data):
+
+def emailStudent(student, data):
     message = f'Hello {student}, here are your appointments : \n\n'
     for slot in data.keys():
         message += f'{slot}\n{data[slot]}\n\n'
-    yag = yagmail.SMTP(mail.email,mail.password)
-    #yag.send(studentEmails[student],'Parents Evening Appointments',message)
+    yagmail.SMTP(mail.email, mail.password).send(studentEmails[student], 'Parents Evening Appointments', message)
 
 
 def adminPortal():
@@ -336,7 +330,7 @@ def adminPortal():
 
 # Main menu UI
 def adminMenu():
-    print('\n'+'+' * 100)
+    print('\n' + '+' * 100)
     print('\nAdmin portal')
     print('\n1 - Output all appointments')
     print('2 - Send all appointments to an email address')
@@ -344,8 +338,9 @@ def adminMenu():
     print('4 - View analytics')
     print('5 - Exit\n')
     value = input('Enter choice : ')
-    print('\n'+'+' * 100)
+    print('\n' + '+' * 100)
     checkAdminMenuValues(value)
+
 
 def checkAdminMenuValues(value):
     try:
@@ -356,7 +351,7 @@ def checkAdminMenuValues(value):
             adminMenu()
         elif value == 2:
             email = str(input('Enter email address : '))
-            emailAdmin(email,slots)
+            emailAdmin(email, slots)
             print('Email sent.')
             time.sleep(1)
             adminMenu()
@@ -378,15 +373,13 @@ def checkAdminMenuValues(value):
         print('Enter a digit from 1 -> 3\n')
         adminMenu()
 
-def emailAdmin(email,data):
+
+def emailAdmin(email, data):
     message = 'Hello, here are all of the generated appointments : \n'
     for slot in data:
-        if 'Slot : ' in slot:
-            message += f'\n{slot}\n'
-        else:
-            message += f'{slot}\n'
-    yag = yagmail.SMTP(mail.email,mail.password)
-    yag.send(email,'Parents Evening Appointments',message)
+        message += f'\n{slot}\n' if 'Slot : ' in slot else f'{slot}\n'
+    yagmail.SMTP(mail.email, mail.password).send(email, 'Parents Evening Appointments', message)
+
 
 def analyse():
     time.sleep(1)
@@ -397,6 +390,7 @@ def analyse():
     print(f'\nNumber of breaks : {breakNum}')
     print(f'\nNumber of appointments not fulfilled : {len(studentTeacher)}')
     adminMenu()
+
 
 # Starts the program
 if __name__ == '__main__':
