@@ -28,17 +28,13 @@ appointmentNum = 0
 # Main menu UI
 def menu():
     print('+' * 100)
-    print('')
-    print('Parents Evening Scheduler')
-    print('')
+    print('\nParents Evening Scheduler\n')
     print('1 - Run')
     print('2 - Configure')
-    print('3 - Exit')
-    print('')
+    print('3 - Exit\n')
     value = input('Enter choice : ')
-    print('+' * 100)
+    print('\n'+'+' * 100)
     checkMenuValues(value)
-
 
 # Checks / validates menu choices and redirects to correct function.
 def checkMenuValues(value):
@@ -133,9 +129,7 @@ def outputSlots():
             print('-' * 50)
             print(item)
         elif item == 'End of evening':
-            print('')
-            print('End of evening')
-            print('')
+            print('\nEnd of evening\n')
         else:
             print(item)
     print('=' * 100)
@@ -151,7 +145,7 @@ def emptySlot(teacher):
 
 # Creates slots and excludes students from another appointment that time slot
 def createSlot(teacher, student):
-    global appointmentNum
+    global appointmentNum,optimality
     appointmentNum += 1
     slots.append((f'{teacher} : {student}'))
     temp = studentTeacher[student].split(',')
@@ -163,7 +157,6 @@ def createSlot(teacher, student):
         studentTeacher.__delitem__(student)
     excludeStudent(student)
     breakList.append(student)
-    global optimality
     optimality *= 1.05
     if optimality > 100:
         optimality = 100
@@ -234,8 +227,10 @@ def endEvening():
     if percentageDecrease > 0.9:
         percentageDecrease = 0.9
     optimality *= 1 - percentageDecrease
+    print('Emailing teachers')
     for teacher in staticTeachers:
         teacherSlots(teacher)
+    print('Emailing students')
     for student in staticStudents:
         studentSlots(student)
     adminPortal()
@@ -259,6 +254,7 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
         clearLowBreak()
         slotHeading(i, eveningStart, appointmentLength)
         for teacher in teacherList:
+            priorities = {}
             slotCreated = False
             for student in students.keys():
                 if teacher in students[student]:
@@ -313,14 +309,14 @@ def emailTeacher(teacher, data):
     message = f'Hello {teacher}, here are your appointments :\n\n'
     for slot in data.keys():
         message += f'{slot}\n{data[slot]}\n\n'
-    yagmail.SMTP(mail.email, mail.password).send(teacherEmails[teacher], 'Parents Evening Appointments', message)
+    #yagmail.SMTP(mail.email, mail.password).send(teacherEmails[teacher], 'Parents Evening Appointments', message)
 
 
 def emailStudent(student, data):
     message = f'Hello {student}, here are your appointments : \n\n'
     for slot in data.keys():
         message += f'{slot}\n{data[slot]}\n\n'
-    yagmail.SMTP(mail.email, mail.password).send(studentEmails[student], 'Parents Evening Appointments', message)
+    #yagmail.SMTP(mail.email, mail.password).send(studentEmails[student], 'Parents Evening Appointments', message)
 
 
 def adminPortal():
@@ -384,11 +380,9 @@ def emailAdmin(email, data):
 def analyse():
     time.sleep(1)
     global optimality, totalSlots, appointmentNum, breakNum
-    print(f'\nOverall optimality : {int(optimality)}%')
-    print(f'\nNumber of slots : {len(slots)}')
-    print(f'\nNumber of appointments : {appointmentNum}')
-    print(f'\nNumber of breaks : {breakNum}')
-    print(f'\nNumber of appointments not fulfilled : {len(studentTeacher)}')
+    print(f'\nOverall optimality : {int(optimality)}%\nNumber of slots : {len(slots)}'
+          f'\nNumber of appointments : {appointmentNum}\nNumber of breaks : {breakNum}'
+          f'\nNumber of appointments not fulfilled : {len(studentTeacher)}')
     adminMenu()
 
 

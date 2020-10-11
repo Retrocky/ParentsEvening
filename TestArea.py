@@ -30,10 +30,6 @@ welcomeText.grid(row=0,column=1,columnspan=5)
 window.mainloop()
 '''
 
-dict1 = {'Will':'Mr.Jeff (3), Mr.Walter (1), Ms.Gary (1), Ms.Onion (1)','Jeff':'ye'}
-temp = dict1['Will'].split(',')
-for teacher in temp:
-    if 'Mr.Walter' in teacher:
-        temp.pop(temp.index(teacher))
-dict1['Will'] = (',').join(temp)
-print(dict1)
+a,b = []
+a.append('lol')
+b.append('ok')
