@@ -1,25 +1,27 @@
-import time
-import pandas
-import yagmail
-from ParentsEvening import mail
+# Importing required packages
+import time  # Used to delay the program at points - making it much more fluid
+import pandas  # Used to read and help format the user's csv file
+import yagmail  # Used to email end-users with appointments
+from ParentsEvening import mail  # A separate file containing passwords for the email to make it more secure
 
 # GUI
 # Admin slot editing?
 
 # Declaring variables
-slots = []
-excluded = []
-breakList = []
-higherBreakList = []
-teacherList = []
-staticTeachers = []
-studentTeacher = {}
+slots = []  # Main list where all appointments created will be added to
+excluded = []  # The list of students excluded from the rest of the time slot as they have already had an appointment
+breakList = []  # The lower break list students who have just had a new appointment are added to this, at the start of a new time slot this is cleared
+higherBreakList = []  # This becomes a copy of the lower breaklist before it clears and is used to check which students have been off for 1 round
+teacherList = []  # List of all the teachers participating in the evening, teachers are removed when they have no more appointment requests
+staticTeachers = []  # A copy of teacherList that is static so it can be used at the end of the evening
+studentTeacher = {}  # The main dictionary containg all students as keys and their requested teachers and priorities as values
 staticStudents = []
 startTimes = {}
 endTimes = {}
 studentEmails = {}
 teacherEmails = {}
-optimality = 100
+optimality = 100  # The optimality percentage of the program, starts at 100%, -5% for a break, +5% for an appointment
+# and -the sum of the priorities of the outstanding requets * the number of outstanding requests at the end of the evening
 totalSlots = 0
 breakNum = 0
 appointmentNum = 0
@@ -33,8 +35,9 @@ def menu():
     print('2 - Configure')
     print('3 - Exit\n')
     value = input('Enter choice : ')
-    print('\n'+'+' * 100)
+    print('\n' + '+' * 100)
     checkMenuValues(value)
+
 
 # Checks / validates menu choices and redirects to correct function.
 def checkMenuValues(value):
@@ -89,6 +92,7 @@ def customRun(eveningStart, eveningEnd, appointmentLength):
     slotSorter(teacherList, studentTeacher, eveningStart, eveningEnd, appointmentLength)
 
 
+# Retrieves and formats data from csv file using a pandas dataFrame
 def getData(filename):
     data = pandas.read_csv(filename)
     teachers = str(data['Teachers'][0])
@@ -119,7 +123,7 @@ def getPriority(student, studentTeacher, reqTeacher):
             return int((teacher.split('('))[1][0])
 
 
-# Outputs slots
+# Outputs slots in a user-friendly manner
 def outputSlots():
     print('=' * 100)
     for item in slots:
@@ -143,9 +147,9 @@ def emptySlot(teacher):
     breakNum += 1
 
 
-# Creates slots and excludes students from another appointment that time slot
+# Creates slots and excludes students from another appointment that time slot, optimality increases by 5%
 def createSlot(teacher, student):
-    global appointmentNum,optimality
+    global appointmentNum, optimality
     appointmentNum += 1
     slots.append((f'{teacher} : {student}'))
     temp = studentTeacher[student].split(',')
@@ -177,11 +181,12 @@ def clearExcluded():
     excluded.clear()
 
 
+# Clears the lower level breaklist so new students can be added
 def clearLowBreak():
     breakList.clear()
 
 
-# Slot heading - Formats time in a user-friendly manner
+# Formats time in a user-friendly manner, converting decimal to hours & minutes
 def slotHeading(slot, startTime, appointmentLength):
     time = decimalTime(slot, startTime, appointmentLength)
     hours = int(time)
@@ -193,13 +198,14 @@ def slotHeading(slot, startTime, appointmentLength):
     slots.append(f'Slot : {slot} Time : {time}')
 
 
+# Returns the decimal time of a specified slot
 def decimalTime(slot, startTime, appointmentLength):
     appointmentDivisible = appointmentLength / 60
     time = startTime + appointmentDivisible * slot
     return time
 
 
-# Sorts students from highest priority to lowest priority
+# Sorts students from highest priority to lowest priority given a certain teacher
 def prioritySorter(priorityDict):
     sortedList = []
     flipped = {}
@@ -215,6 +221,7 @@ def prioritySorter(priorityDict):
     return [i for i in reversed(sortedList)]
 
 
+# Initiates the end of the evening, calculates optimality and requests to email students & teachers
 def endEvening():
     global studentTeacher, optimality, staticStudents
     slots.append('End of evening\n')
@@ -282,6 +289,7 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentL
     endEvening()
 
 
+# Returns a dictionary of a certain teacher's slots
 def teacherSlots(teacher):
     temp = ''
     teacherSlots = {}
@@ -293,6 +301,7 @@ def teacherSlots(teacher):
     emailTeacher(teacher, teacherSlots)
 
 
+# Returns a dictionary of a certain student's slots
 def studentSlots(student):
     temp = ''
     studentSlots = {}
@@ -305,26 +314,29 @@ def studentSlots(student):
     emailStudent(student, studentSlots)
 
 
+# Using Yagmail - teachers are emailed in a user-friendly manner all of their slots
 def emailTeacher(teacher, data):
     message = f'Hello {teacher}, here are your appointments :\n\n'
     for slot in data.keys():
         message += f'{slot}\n{data[slot]}\n\n'
-    #yagmail.SMTP(mail.email, mail.password).send(teacherEmails[teacher], 'Parents Evening Appointments', message)
+    # yagmail.SMTP(mail.email, mail.password).send(teacherEmails[teacher], 'Parents Evening Appointments', message)
 
 
+# Using Yagmail - students are emailed in a user-friendly manner all of their slots
 def emailStudent(student, data):
     message = f'Hello {student}, here are your appointments : \n\n'
     for slot in data.keys():
         message += f'{slot}\n{data[slot]}\n\n'
-    #yagmail.SMTP(mail.email, mail.password).send(studentEmails[student], 'Parents Evening Appointments', message)
+    # yagmail.SMTP(mail.email, mail.password).send(studentEmails[student], 'Parents Evening Appointments', message)
 
 
+# Takes the admin to stage 2 of the program, the post optimisation menu
 def adminPortal():
     print('OPTIMISATION SUCCESSFUL\n')
     adminMenu()
 
 
-# Main menu UI
+# Admin menu UI
 def adminMenu():
     print('\n' + '+' * 100)
     print('\nAdmin portal')
@@ -338,6 +350,7 @@ def adminMenu():
     checkAdminMenuValues(value)
 
 
+# Checks / validates menu choices and redirects to correct function.
 def checkAdminMenuValues(value):
     try:
         value = int(value)
@@ -370,6 +383,7 @@ def checkAdminMenuValues(value):
         adminMenu()
 
 
+# Emails an admin with all of the generated slots
 def emailAdmin(email, data):
     message = 'Hello, here are all of the generated appointments : \n'
     for slot in data:
@@ -377,6 +391,7 @@ def emailAdmin(email, data):
     yagmail.SMTP(mail.email, mail.password).send(email, 'Parents Evening Appointments', message)
 
 
+# Outputs the optimisation analytics in a user-friendly format
 def analyse():
     time.sleep(1)
     global optimality, totalSlots, appointmentNum, breakNum
