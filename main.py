@@ -129,7 +129,6 @@ def outputSlots():
     for item in slots:
         if 'Slot : ' in item:
             time.sleep(0.1)
-            print("")
             print('-' * 50)
             print(item)
         elif item == 'End of evening':
@@ -225,7 +224,7 @@ def prioritySorter(priorityDict):
 def endEvening():
     global studentTeacher, optimality, staticStudents
     slots.append('End of evening\n')
-    print(f'Outstanding requests : \n{studentTeacher}')
+    print(f'Outstanding requests : {studentTeacher}')
     priorityImpact = 0
     for student in studentTeacher.keys():
         for teacher in studentTeacher[student].split(','):
@@ -234,12 +233,6 @@ def endEvening():
     if percentageDecrease > 0.9:
         percentageDecrease = 0.9
     optimality *= 1 - percentageDecrease
-    print('Emailing teachers')
-    for teacher in staticTeachers:
-        teacherSlots(teacher)
-    print('Emailing students')
-    for student in staticStudents:
-        studentSlots(student)
     adminPortal()
 
 
@@ -342,9 +335,11 @@ def adminMenu():
     print('\nAdmin portal')
     print('\n1 - Output all appointments')
     print('2 - Send all appointments to an email address')
-    print('3 - Configure & run again')
-    print('4 - View analytics')
-    print('5 - Exit\n')
+    print('3 - Edit appointments')
+    print('4 - Configure & run again')
+    print('5 - View analytics\n')
+    print('6 - Email teachers & students\n')
+    print('7 - Exit\n')
     value = input('Enter choice : ')
     print('\n' + '+' * 100)
     checkAdminMenuValues(value)
@@ -352,6 +347,7 @@ def adminMenu():
 
 # Checks / validates menu choices and redirects to correct function.
 def checkAdminMenuValues(value):
+    global staticTeachers, staticStudents
     try:
         value = int(value)
         if value == 1:
@@ -365,13 +361,23 @@ def checkAdminMenuValues(value):
             time.sleep(1)
             adminMenu()
         elif value == 3:
+            edit()
+        elif value == 4:
             print('Restarting...')
             time.sleep(0.25)
             checkMenuValues(2)
-        elif value == 4:
+        elif value == 5:
             print('Calculating analytics')
             analyse()
-        elif value == 5:
+        elif value == 6:
+            print('Emailing teachers')
+            for teacher in staticTeachers:
+                teacherSlots(teacher)
+            print('Emailing students')
+            for student in staticStudents:
+                studentSlots(student)
+            adminMenu()
+        elif value == 7:
             print('Exiting program')
             time.sleep(0.5)
             exit()
@@ -389,6 +395,50 @@ def emailAdmin(email, data):
     for slot in data:
         message += f'\n{slot}\n' if 'Slot : ' in slot else f'{slot}\n'
     yagmail.SMTP(mail.email, mail.password).send(email, 'Parents Evening Appointments', message)
+
+
+def edit():
+    global slots
+    potentialEdits = []
+    confirmedEdit = ''
+    print('Editing\n')
+    outputSlots()
+    while True:
+        reqSlot = input('\nWhich slot would you like to change? (Enter slot number) : ')
+        try:
+            reqSlot = int(reqSlot)
+            if reqSlot > 0 and reqSlot >= totalSlots:
+                break
+        except ValueError:
+            print(f'Please enter a number in the range of 0 -> {totalSlots}')
+            pass
+    for item in slots:
+        if f'Slot : {reqSlot}' in item:
+            for i in range(len(staticTeachers) + 1):
+                print(f'\n{slots[slots.index(item) + i]}')
+                potentialEdits.append(slots[slots.index(item) + i])
+    while True:
+        reqTeacher = str(input('\nWhich appointment would you like to change? (Enter teacher name) : '))
+        if reqTeacher in staticTeachers:
+            break
+        else:
+            print(f'Please enter one of these teachers : {staticTeachers}')
+            pass
+    for appointment in potentialEdits:
+        if f'{reqTeacher} : ' in appointment:
+            confirmedEdit = str(appointment)
+            print(f'\nChanging : {appointment}\n')
+            currentStudent = appointment.split(':')[1].strip()
+            reqStudent = input(f'Enter the student you would like to add instead of the {currentStudent} : ')
+            print(f'New slot : {reqTeacher} : {reqStudent}')
+            confirmedEdit = confirmedEdit.replace(currentStudent, reqStudent)
+            for item in slots:
+                if item == f'{reqTeacher} : {currentStudent}':
+                    slots[slots.index(item)] = confirmedEdit
+            print('Successfully updated')
+            time.sleep(0.5)
+            outputSlots()
+    adminMenu()
 
 
 # Outputs the optimisation analytics in a user-friendly format
