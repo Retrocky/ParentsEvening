@@ -262,7 +262,7 @@ def endEvening():
 
 
 # Loops through each slot with each teacher and matches students to their teachers needed
-def slotSorter(teacherList, students, eveningStart=6, eveningEnd=9, appointmentLength=5):
+def slotSorter(teacherList, students, eveningStart=6, eveningEnd='20:00', appointmentLength=5):
     potentialEnd = {}
     for teacher in teacherList:
         potentialEnd[teacher] = 0
