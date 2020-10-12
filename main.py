@@ -3,9 +3,12 @@ import time  # Used to delay the program at points - making it much more fluid
 import pandas  # Used to read and help format the user's csv file
 import yagmail  # Used to email end-users with appointments
 from ParentsEvening import mail  # A separate file containing passwords for the email to make it more secure
+from ParentsEvening import TestArea
+from tkinter import Tk  # Used to hide the default tkinter dialog box when choosing a file
+import tkinter.filedialog as fd  # Used to browse files
+import os  # Used to access the current directory
 
 # GUI
-# Admin slot editing?
 
 # Declaring variables
 
@@ -39,8 +42,9 @@ startTimes = {}
 endTimes = {}
 studentEmails = {}
 teacherEmails = {}
+fileName = ''
 optimality = 100  # The optimality percentage of the program, starts at 100%, -5% for a break, +5% for an appointment
-# and -the sum of the priorities of the outstanding requets * the number of outstanding requests at the end of the
+# and -the sum of the priorities of the outstanding requests * the number of outstanding requests at the end of the
 # evening
 totalSlots = 0
 breakNum = 0
@@ -49,11 +53,15 @@ appointmentNum = 0
 
 # Main menu UI
 def menu():
+    global fileName
     print('+' * 100)
     print('\nParents Evening Scheduler\n')
-    print('1 - Run')
-    print('2 - Configure')
-    print('3 - Exit\n')
+    time.sleep(1)
+    print('Please open CSV file to import data.\n')
+    time.sleep(2)
+    fileName = getFile()
+    print('1 - Configure')
+    print('2 - Exit\n')
     value = input('Enter choice : ')
     print('\n' + '+' * 100)
     checkMenuValues(value)
@@ -68,46 +76,48 @@ def decimalTimeFromString(string):
 def checkMenuValues(value):
     try:
         value = int(value)
-        if value == 1:
-            getData('ParentsEvening.csv')
-            slotSorter(teacherList, studentTeacher)
-        elif value == 2:
-            print('Custom run\n')
-            while True:
-                eveningStart = input('Evening start time (24hr HH:MM) : ')
-                try:
-                    eveningStart = decimalTimeFromString(eveningStart)
-                    break
-                except ValueError:
-                    print('Please enter the time (24hr HH:MM) e.g - 21:15')
-            while True:
-                eveningEnd = input('Evening end time (24hr HH:MM) : ')
-                try:
-                    eveningEnd = decimalTimeFromString(eveningEnd)
-                    break
-                except ValueError:
-                    print('Please enter the time (24hr HH:MM) e.g - 21:15')
-            while True:
-                appointmentLength = input('Enter appointment length (In minutes) : ')
-                try:
-                    appointmentLength = int(appointmentLength)
-                    break
-                except ValueError:
-                    print('Please enter an integer')
-            while True:
-                filename = input('CSV file path : ')
-                try:
-                    getData(filename)
-                    break
-                except FileNotFoundError:
-                    print('File doesnt exist, please try again.')
-            customRun(eveningStart, eveningEnd, appointmentLength)
-        elif value == 3:
-            exit()
-        else:
-            print('Invalid choice - Please try again.\n'), menu()
     except ValueError:
-        print('Enter a digit from 1 -> 3\n'), menu()
+        print('Enter a digit from 1 -> 3')
+        menu()
+    if value == 1:
+        while True:
+            eveningStart = input('Evening start time (24hr HH:MM) : ')
+            try:
+                eveningStart = decimalTimeFromString(eveningStart)
+                break
+            except ValueError:
+                print('Please enter the time (24hr HH:MM) e.g - 21:15')
+        while True:
+            eveningEnd = input('Evening end time (24hr HH:MM) : ')
+            try:
+                eveningEnd = decimalTimeFromString(eveningEnd)
+                if eveningEnd > eveningStart:
+                    break
+                else:
+                    print('Error - The end of the evening must be later than the start of the evening.')
+                    checkMenuValues(1)
+            except ValueError:
+                print('Please enter the time (24hr HH:MM) e.g - 21:15')
+        while True:
+            appointmentLength = input('Enter appointment length (In minutes) : ')
+            try:
+                appointmentLength = int(appointmentLength)
+                break
+            except ValueError:
+                print('Please enter an integer')
+        getData(fileName)
+        customRun(eveningStart, eveningEnd, appointmentLength)
+    elif value == 2:
+        exit()
+    else:
+        print('Invalid choice - Please try again.')
+        menu()
+
+
+def getFile():
+    Tk().withdraw()
+    return fd.askopenfilename(initialdir=os.getcwd(), title="Select CSV to import",
+                              filetypes=(('CSV files', '*.csv'), ('all files', '*.*')))
 
 
 # Redirects custom run to main slot-sorter, changing the default values
@@ -165,7 +175,7 @@ def outputSlots():
 
 # Creates a break for the teacher if the slot is empty
 def emptySlot(teacher):
-    slots.append((f"{teacher} : BREAK"))
+    slots.append(f"{teacher} : BREAK")
     global breakNum, optimality
     optimality *= 0.95
     breakNum += 1
@@ -175,12 +185,12 @@ def emptySlot(teacher):
 def createSlot(teacher, student):
     global appointmentNum, optimality
     appointmentNum += 1
-    slots.append((f'{teacher} : {student}'))
+    slots.append(f'{teacher} : {student}')
     temp = studentTeacher[student].split(',')
     for teacherIter in temp:
         if teacher in teacherIter:
             temp.pop(temp.index(teacherIter))
-    studentTeacher[student] = (',').join(temp)
+    studentTeacher[student] = ','.join(temp)
     if studentTeacher[student] == '':
         studentTeacher.__delitem__(student)
     excludeStudent(student)
@@ -262,7 +272,7 @@ def endEvening():
 
 
 # Loops through each slot with each teacher and matches students to their teachers needed
-def slotSorter(teacherList, students, eveningStart=6, eveningEnd='20:00', appointmentLength=5):
+def slotSorter(teacherList, students, eveningStart, eveningEnd, appointmentLength):
     potentialEnd = {}
     for teacher in teacherList:
         potentialEnd[teacher] = 0
@@ -272,7 +282,6 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd='20:00', appoin
         if len(teacherList) == 0:
             endEvening()
             break
-        priorities = {}
         decTime = decimalTime(i, eveningStart, appointmentLength)
         clearExcluded()
         higherbreaklist = breakList.copy()
@@ -294,7 +303,7 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd='20:00', appoin
                     potentialEnd[teacher] = 0
                     break
             # Comes here if constraints don't allow anyone or all appointments have been made
-            if slotCreated == False:
+            if not slotCreated:
                 potentialEnd[teacher] += 1
                 emptySlot(teacher)
                 if potentialEnd[teacher] == 2:
@@ -302,7 +311,7 @@ def slotSorter(teacherList, students, eveningStart=6, eveningEnd='20:00', appoin
                     for student in list(studentTeacher.keys()):
                         if teacher in studentTeacher[student] and endTimes[student] > decTime:
                             remove = False
-                    if remove == True:
+                    if remove:
                         teacherList.remove(teacher)
     endEvening()
 
@@ -389,7 +398,7 @@ def checkAdminMenuValues(value):
         elif value == 4:
             print('Restarting...')
             time.sleep(0.25)
-            checkMenuValues(2)
+            checkMenuValues(1)
         elif value == 5:
             print('Calculating analytics')
             analyse()
@@ -424,7 +433,6 @@ def emailAdmin(email, data):
 def edit():
     global slots
     potentialEdits = []
-    confirmedEdit = ''
     print('Editing\n')
     outputSlots()
     while True:
