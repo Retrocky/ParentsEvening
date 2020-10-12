@@ -59,6 +59,11 @@ def menu():
     checkMenuValues(value)
 
 
+def decimalTimeFromString(string):
+    (h, m) = string.split(':')
+    return float(int(h) + int(m) / 60)
+
+
 # Checks / validates menu choices and redirects to correct function.
 def checkMenuValues(value):
     try:
@@ -69,19 +74,19 @@ def checkMenuValues(value):
         elif value == 2:
             print('Custom run\n')
             while True:
-                eveningStart = input('Evening start time : ')
+                eveningStart = input('Evening start time (24hr HH:MM) : ')
                 try:
-                    eveningStart = float(eveningStart)
+                    eveningStart = decimalTimeFromString(eveningStart)
                     break
                 except ValueError:
-                    print('Please enter a digit')
+                    print('Please enter the time (24hr HH:MM) e.g - 21:15')
             while True:
-                eveningEnd = input('Evening end time : ')
+                eveningEnd = input('Evening end time (24hr HH:MM) : ')
                 try:
-                    eveningEnd = float(eveningEnd)
+                    eveningEnd = decimalTimeFromString(eveningEnd)
                     break
                 except ValueError:
-                    print('Please enter a digit')
+                    print('Please enter the time (24hr HH:MM) e.g - 21:15')
             while True:
                 appointmentLength = input('Enter appointment length (In minutes) : ')
                 try:
@@ -123,8 +128,8 @@ def getData(filename):
     for i in range(1, len(data.index)):
         item = data.loc[i]
         studentTeacher[item[0]] = item[1]
-        startTimes[item[0]] = float(item[2])
-        endTimes[item[0]] = float(item[3])
+        startTimes[item[0]] = decimalTimeFromString(item[2])
+        endTimes[item[0]] = decimalTimeFromString(item[3])
         studentEmails[item[0]] = item[4]
     staticStudents = list(studentTeacher.keys()).copy()
     for item in data.loc[0]:
@@ -332,7 +337,7 @@ def emailTeacher(teacher, data):
     message = f'Hello {teacher}, here are your appointments :\n\n'
     for slot in data.keys():
         message += f'{slot}\n{data[slot]}\n\n'
-    # yagmail.SMTP(mail.email, mail.password).send(teacherEmails[teacher], 'Parents Evening Appointments', message)
+    yagmail.SMTP(mail.email, mail.password).send(teacherEmails[teacher], 'Parents Evening Appointments', message)
 
 
 # Using Yagmail - students are emailed in a user-friendly manner all of their slots
@@ -340,18 +345,17 @@ def emailStudent(student, data):
     message = f'Hello {student}, here are your appointments : \n\n'
     for slot in data.keys():
         message += f'{slot}\n{data[slot]}\n\n'
-    # yagmail.SMTP(mail.email, mail.password).send(studentEmails[student], 'Parents Evening Appointments', message)
+    yagmail.SMTP(mail.email, mail.password).send(studentEmails[student], 'Parents Evening Appointments', message)
 
 
 # Takes the admin to stage 2 of the program, the post optimisation menu
 def adminPortal():
-    print('OPTIMISATION SUCCESSFUL\n')
     adminMenu()
 
 
 # Admin menu UI
 def adminMenu():
-    print('\n' + '+' * 100)
+    print('+' * 100)
     print('\nAdmin portal')
     print('\n1 - Output all appointments')
     print('2 - Send all appointments to an email address')
