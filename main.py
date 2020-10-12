@@ -8,20 +8,40 @@ from ParentsEvening import mail  # A separate file containing passwords for the 
 # Admin slot editing?
 
 # Declaring variables
-slots = []  # Main list where all appointments created will be added to
-excluded = []  # The list of students excluded from the rest of the time slot as they have already had an appointment
-breakList = []  # The lower break list students who have just had a new appointment are added to this, at the start of a new time slot this is cleared
-higherBreakList = []  # This becomes a copy of the lower breaklist before it clears and is used to check which students have been off for 1 round
-teacherList = []  # List of all the teachers participating in the evening, teachers are removed when they have no more appointment requests
-staticTeachers = []  # A copy of teacherList that is static so it can be used at the end of the evening
-studentTeacher = {}  # The main dictionary containg all students as keys and their requested teachers and priorities as values
+
+slots = []
+# Main list where all appointments created will be added to
+
+excluded = []
+# The list of students excluded from the rest of the time slot as they have already had an appointment
+
+breakList = []
+# The lower break list students who have just had a new appointment are added to this, at the start
+# of a new time slot this is cleared
+
+higherBreakList = []
+# This becomes a copy of the lower breaklist before it clears and is used to check which
+# students have been off for 1 round
+
+teacherList = []
+# List of all the teachers participating in the evening, teachers are removed when they have no
+# more appointment requests
+
+staticTeachers = []
+# A copy of teacherList that is static so it can be used at the end of the evening
+
+studentTeacher = {}
+# The main dictionary containing all students as keys and their requested teachers and priorities
+# as values
+
 staticStudents = []
 startTimes = {}
 endTimes = {}
 studentEmails = {}
 teacherEmails = {}
 optimality = 100  # The optimality percentage of the program, starts at 100%, -5% for a break, +5% for an appointment
-# and -the sum of the priorities of the outstanding requets * the number of outstanding requests at the end of the evening
+# and -the sum of the priorities of the outstanding requets * the number of outstanding requests at the end of the
+# evening
 totalSlots = 0
 breakNum = 0
 appointmentNum = 0
