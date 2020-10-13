@@ -3,7 +3,6 @@ import time  # Used to delay the program at points - making it much more fluid
 import pandas  # Used to read and help format the user's csv file
 import yagmail  # Used to email end-users with appointments
 from ParentsEvening import mail  # A separate file containing passwords for the email to make it more secure
-from ParentsEvening import TestArea
 from tkinter import Tk  # Used to hide the default tkinter dialog box when choosing a file
 import tkinter.filedialog as fd  # Used to browse files
 import os  # Used to access the current directory
@@ -43,7 +42,7 @@ endTimes = {}
 studentEmails = {}
 teacherEmails = {}
 fileName = ''
-optimality = 100  # The optimality percentage of the program, starts at 100%, -5% for a break, +5% for an appointment
+optimality = 100  # The optimality percentage of the program, starts at 100%, -2% for a break, +5% for an appointment
 # and -the sum of the priorities of the outstanding requests * the number of outstanding requests at the end of the
 # evening
 totalSlots = 0
@@ -51,16 +50,25 @@ breakNum = 0
 appointmentNum = 0
 
 
+def continueReq():
+    shortSleep()
+    input('Press enter to continue...')
+
+
+def shortSleep():
+    time.sleep(0.5)
+
+
 # Main menu UI
 def menu():
     global fileName
     print('+' * 100)
     print('\nParents Evening Scheduler\n')
-    time.sleep(1)
+    shortSleep()
     print('Please open CSV file to import data.\n')
-    time.sleep(2)
+    continueReq()
     fileName = getFile()
-    print('1 - Configure')
+    print('\n1 - Configure')
     print('2 - Exit\n')
     value = input('Enter choice : ')
     print('\n' + '+' * 100)
@@ -177,7 +185,7 @@ def outputSlots():
 def emptySlot(teacher):
     slots.append(f"{teacher} : BREAK")
     global breakNum, optimality
-    optimality *= 0.95
+    optimality *= 0.98
     breakNum += 1
 
 
@@ -235,7 +243,7 @@ def slotHeading(slot, startTime, appointmentLength):
 # Returns the decimal time of a specified slot
 def decimalTime(slot, startTime, appointmentLength):
     appointmentDivisible = appointmentLength / 60
-    time = startTime + appointmentDivisible * slot
+    time = startTime + appointmentDivisible * (slot - 1)
     return time
 
 
@@ -278,7 +286,7 @@ def slotSorter(teacherList, students, eveningStart, eveningEnd, appointmentLengt
         potentialEnd[teacher] = 0
     totalSlots = int((eveningEnd - eveningStart) * (60 / appointmentLength))
     print(f'Total slots : {totalSlots}')
-    for i in range(totalSlots):
+    for i in range(1, totalSlots + 1):
         if len(teacherList) == 0:
             endEvening()
             break
@@ -468,7 +476,7 @@ def edit():
                 if item == f'{reqTeacher} : {currentStudent}':
                     slots[slots.index(item)] = confirmedEdit
             print('Successfully updated')
-            time.sleep(0.5)
+            shortSleep()
             outputSlots()
     adminMenu()
 
@@ -477,8 +485,8 @@ def edit():
 def analyse():
     time.sleep(1)
     global optimality, totalSlots, appointmentNum, breakNum
-    print(f'\nOverall optimality : {int(optimality)}%\nNumber of slots : {len(slots)}'
-          f'\nNumber of appointments : {appointmentNum}\nNumber of breaks : {breakNum}'
+    print(f'\nOverall optimality : {int(optimality)}%'
+          f'\nNumber of successful appointments : {appointmentNum}\nNumber of breaks : {breakNum}'
           f'\nNumber of appointments not fulfilled : {len(studentTeacher)}')
     adminMenu()
 
