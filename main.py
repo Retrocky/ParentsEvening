@@ -1,9 +1,10 @@
 # Importing required packages
 import time  # Used to delay the program at points - making it much more fluid
 import pandas  # Used to read and help format the user's csv file
+import pandas.errors
 import yagmail  # Used to email end-users with appointments
 from ParentsEvening import mail  # A separate file containing passwords for the email to make it more secure
-from tkinter import Tk  # Used to hide the default tkinter dialog box when choosing a file
+from tkinter import *  # Used to hide the default tkinter dialog box when choosing a file
 import tkinter.filedialog as fd  # Used to browse files
 import os  # Used to access the current directory
 
@@ -59,71 +60,124 @@ def shortSleep():
     time.sleep(0.5)
 
 
+# Outputs an error message
+def error(message):
+    block = '+' * (len(message) + 16)
+    print(f'\n{block}\nERROR - {message} - ERROR\n{block}\n')
+    continueReq()
+
+
 # Main menu UI
 def menu():
-    global fileName
-    print('+' * 100)
     print('\nParents Evening Scheduler\n')
     shortSleep()
-    print('Please open CSV file to import data.\n')
-    continueReq()
-    fileName = getFile()
     print('\n1 - Configure')
     print('2 - Exit\n')
     value = input('Enter choice : ')
-    print('\n' + '+' * 100)
     checkMenuValues(value)
 
 
+# Converts time in format HH:MM to decimal form so it can be used in calculations
 def decimalTimeFromString(string):
     (h, m) = string.split(':')
     return float(int(h) + int(m) / 60)
 
 
+# Checks time is in the correct format
+def checkTime(reqTime):
+    temp = reqTime.split(':')
+    try:
+        if len(temp[0]) == 2 and len(temp[1]) == 2:
+            if int(temp[0][0]) == 1 or int(temp[0][0]) == 0:
+                try:
+                    test = int(temp[0][1])
+                    if 0 <= int(temp[1][0]) <= 5:
+                        try:
+                            test = int(temp[1][1])
+                            return True
+                        except ValueError:
+                            return False
+                    else:
+                        return False
+                except ValueError:
+                    return False
+            elif int(temp[0][0]) == 2:
+                if int(temp[0][1]) < 4:
+                    if 0 <= int(temp[1][0]) <= 5:
+                        try:
+                            test = int(temp[1][1])
+                            return True
+                        except ValueError:
+                            return False
+                    else:
+                        return False
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return False
+    except:
+        return False
+
+
 # Checks / validates menu choices and redirects to correct function.
 def checkMenuValues(value):
+    global fileName
     try:
         value = int(value)
     except ValueError:
-        print('Enter a digit from 1 -> 3')
+        error('Enter a digit from 1 -> 3')
         menu()
     if value == 1:
+        print('Please open CSV file to import data.\n')
+        continueReq()
+        root = Tk()
+        root.geometry('1x1')
+        fileName = getFile()
+        root.destroy()
+        getData(fileName)
         while True:
             eveningStart = input('Evening start time (24hr HH:MM) : ')
             try:
-                eveningStart = decimalTimeFromString(eveningStart)
-                break
+                if checkTime(eveningStart):
+                    eveningStart = decimalTimeFromString(eveningStart)
+                    break
+                else:
+                    error('Please enter the time (24hr HH:MM) e.g - 21:15')
+                    checkMenuValues(1)
             except ValueError:
-                print('Please enter the time (24hr HH:MM) e.g - 21:15')
+                error('Please enter the time (24hr HH:MM) e.g - 21:15')
         while True:
             eveningEnd = input('Evening end time (24hr HH:MM) : ')
             try:
-                eveningEnd = decimalTimeFromString(eveningEnd)
-                if eveningEnd > eveningStart:
-                    break
+                if checkTime(eveningEnd):
+                    eveningEnd = decimalTimeFromString(eveningEnd)
+                    if eveningEnd > eveningStart:
+                        break
+                    else:
+                        error('The end of the evening must be later than the start of the evening.')
+                        checkMenuValues(1)
                 else:
-                    print('Error - The end of the evening must be later than the start of the evening.')
-                    checkMenuValues(1)
+                    error('Please enter the time (24hr HH:MM) e.g - 21:15')
             except ValueError:
-                print('Please enter the time (24hr HH:MM) e.g - 21:15')
+                error('Please enter the time (24hr HH:MM) e.g - 21:15')
         while True:
             appointmentLength = input('Enter appointment length (In minutes) : ')
             try:
                 appointmentLength = int(appointmentLength)
                 break
             except ValueError:
-                print('Please enter an integer')
-        getData(fileName)
+                error('Please enter an integer.')
         customRun(eveningStart, eveningEnd, appointmentLength)
     elif value == 2:
         exit()
     else:
-        print('Invalid choice - Please try again.')
+        error('Invalid choice - Please try again.')
         menu()
 
 
 def getFile():
-    Tk().withdraw()
     return fd.askopenfilename(initialdir=os.getcwd(), title="Select CSV to import",
                               filetypes=(('CSV files', '*.csv'), ('all files', '*.*')))
 
@@ -137,25 +191,29 @@ def customRun(eveningStart, eveningEnd, appointmentLength):
 
 # Retrieves and formats data from csv file using a pandas dataFrame
 def getData(filename):
-    data = pandas.read_csv(filename)
-    teachers = str(data['Teachers'][0])
-    for teacher in teachers.split(','):
-        teacherList.append(teacher.split('(')[0].strip())
-    global staticTeachers, staticStudents
-    staticTeachers = teacherList.copy()
-    for i in range(1, len(data.index)):
-        item = data.loc[i]
-        studentTeacher[item[0]] = item[1]
-        startTimes[item[0]] = decimalTimeFromString(item[2])
-        endTimes[item[0]] = decimalTimeFromString(item[3])
-        studentEmails[item[0]] = item[4]
-    staticStudents = list(studentTeacher.keys()).copy()
-    for item in data.loc[0]:
-        if item != 'x':
-            temp = item.split(',')
-            for email in temp:
-                teacher = email.split('(')[0].strip()
-                teacherEmails[teacher] = email.split('(')[1][:-1]
+    try:
+        data = pandas.read_csv(filename)
+        teachers = str(data['Teachers'][0])
+        for teacher in teachers.split(','):
+            teacherList.append(teacher.split('(')[0].strip())
+        global staticTeachers, staticStudents
+        staticTeachers = teacherList.copy()
+        for i in range(1, len(data.index)):
+            item = data.loc[i]
+            studentTeacher[item[0]] = item[1]
+            startTimes[item[0]] = decimalTimeFromString(item[2])
+            endTimes[item[0]] = decimalTimeFromString(item[3])
+            studentEmails[item[0]] = item[4]
+        staticStudents = list(studentTeacher.keys()).copy()
+        for item in data.loc[0]:
+            if item != 'x':
+                temp = item.split(',')
+                for email in temp:
+                    teacher = email.split('(')[0].strip()
+                    teacherEmails[teacher] = email.split('(')[1][:-1]
+    except:
+        error('CSV not formatted correctly.')
+        menu()
 
 
 # Returns the priority weighting for a teacher by the respective student
@@ -304,7 +362,7 @@ def slotSorter(teacherList, students, eveningStart, eveningEnd, appointmentLengt
             studentPriorities = prioritySorter(priorities)
             for student in studentPriorities:
                 # Optimal solution
-                if not checkExcluded(student) and slotCreated == False and student not in higherbreaklist and \
+                if not checkExcluded(student) and slotCreated is False and student not in higherbreaklist and \
                         startTimes[student] <= decTime < endTimes[student]:
                     createSlot(teacher, student)
                     slotCreated = True
@@ -423,10 +481,10 @@ def checkAdminMenuValues(value):
             time.sleep(0.5)
             exit()
         else:
-            print('Invalid choice - Please try again.\n')
+            error('Invalid choice - Please try again.')
             adminMenu()
     except ValueError:
-        print('Enter a digit from 1 -> 3\n')
+        error('Enter a digit from 1 -> 3')
         adminMenu()
 
 
@@ -450,7 +508,7 @@ def edit():
             if reqSlot > 0 and reqSlot >= totalSlots:
                 break
         except ValueError:
-            print(f'Please enter a number in the range of 0 -> {totalSlots}')
+            error(f'Please enter a number in the range of 0 -> {totalSlots}')
             pass
     for item in slots:
         if f'Slot : {reqSlot}' in item:
@@ -462,7 +520,7 @@ def edit():
         if reqTeacher in staticTeachers:
             break
         else:
-            print(f'Please enter one of these teachers : {staticTeachers}')
+            error(f'Please enter one of these teachers : {staticTeachers}')
             pass
     for appointment in potentialEdits:
         if f'{reqTeacher} : ' in appointment:
@@ -476,7 +534,7 @@ def edit():
                 if item == f'{reqTeacher} : {currentStudent}':
                     slots[slots.index(item)] = confirmedEdit
             print('Successfully updated')
-            shortSleep()
+            continueReq()
             outputSlots()
     adminMenu()
 
@@ -488,6 +546,7 @@ def analyse():
     print(f'\nOverall optimality : {int(optimality)}%'
           f'\nNumber of successful appointments : {appointmentNum}\nNumber of breaks : {breakNum}'
           f'\nNumber of appointments not fulfilled : {len(studentTeacher)}')
+    continueReq()
     adminMenu()
 
 
