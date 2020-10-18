@@ -1,12 +1,14 @@
 # Importing required packages
-import time  # Used to delay the program at points - making it much less jolty
+import os  # Used to access the current directory
+import time  # Used to delay the program at points - making it much more smooth
+import tkinter.filedialog as fd  # Used to browse files
+from tkinter import *  # Used to hide the default tkinter dialog box when choosing a file
+
 import pandas  # Used to read and help format the user's csv file
 import pandas.errors
 import yagmail  # Used to email end-users with appointments
+
 from ParentsEvening import mail  # A separate file containing passwords for the email to make it more secure
-from tkinter import *  # Used to hide the default tkinter dialog box when choosing a file
-import tkinter.filedialog as fd  # Used to browse files
-import os  # Used to access the current directory
 
 # Declaring variables
 
@@ -151,12 +153,12 @@ def getFile():
 
 def getData(filename):
     """Retrieves and formats data from csv file using a pandas dataFrame"""
+    global teacherList, staticTeachers, staticStudents
     try:
         data = pandas.read_csv(filename)
         teachers = str(data['Teachers'][0])
         for teacher in teachers.split(','):
             teacherList.append(teacher.split('(')[0].strip())
-        global staticTeachers, staticStudents
         staticTeachers = teacherList.copy()
         for i in range(1, len(data.index)):
             item = data.loc[i]
@@ -171,7 +173,8 @@ def getData(filename):
                 for email in temp:
                     teacher = email.split('(')[0].strip()
                     teacherEmails[teacher] = email.split('(')[1][:-1]
-    except pandas.errors:
+    except:
+        # Bare except needed as csv could be formatted wrong in countless permutations
         error('CSV not formatted correctly.')
         menu()
 
@@ -203,8 +206,9 @@ def decimalTimeFromString(string):
 
 def customRun(eveningStart, eveningEnd, appointmentLength):
     """Redirects custom run to main slot-sorter, changing the default values"""
-    global slots
+    global slots, teacherList
     slots = []
+    print(teacherList)
     slotSorter(teacherList, studentTeacher, eveningStart, eveningEnd, appointmentLength)
 
 
@@ -406,7 +410,7 @@ def studentSlots(student):
     emailStudent(student, studentAppointments)
 
 
-# Using Yagmail - teachers are emailed in a user-friendly manner all of their slots
+# Using the Yagmail library - teachers are emailed in a user-friendly manner all of their slots
 def emailTeacher(teacher, data):
     message = f'Hello {teacher}, here are your appointments :\n\n'
     for slot in data.keys():
@@ -414,7 +418,7 @@ def emailTeacher(teacher, data):
     yagmail.SMTP(mail.email, mail.password).send(teacherEmails[teacher], 'Parents Evening Appointments', message)
 
 
-# Using Yagmail - students are emailed in a user-friendly manner all of their slots
+# Using the Yagmail library - students are emailed in a user-friendly manner all of their slots
 def emailStudent(student, data):
     message = f'Hello {student}, here are your appointments : \n\n'
     for slot in data.keys():
