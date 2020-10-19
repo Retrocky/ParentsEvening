@@ -1,11 +1,12 @@
 # Importing required packages
+
 import os  # Used to access the current directory
 import time  # Used to delay the program at points - making it much more smooth
 import tkinter.filedialog as fd  # Used to browse files
 from tkinter import *  # Used to hide the default tkinter dialog box when choosing a file
 
 import pandas  # Used to read and help format the user's csv file
-import pandas.errors
+import pandas.errors  # Used to capture errors when parsing the user-inputted csv file
 import yagmail  # Used to email end-users with appointments
 
 from ParentsEvening import mail  # A separate file containing passwords for the email to make it more secure
@@ -34,16 +35,22 @@ studentTeacher = {}
 # as values
 
 staticStudents = []
+# A static copy of the list of students, used to send emails post-optimisation
 
 startTimes = {}
+# A dictionary with students being keys and their respective start times being values
 
 endTimes = {}
+# A dictionary with students being keys and their respective end times being values
 
 studentEmails = {}
+# A dictionary with students being keys and their respective emails being values
 
 teacherEmails = {}
+# A dictionary with teachers being keys and their respective emails being values
 
 fileName = ''
+# A global instantiation of the csv filename so local functions can access it
 
 optimality = 100
 # The optimality percentage of the program, starts at 100%, -2% for a break, +5% for an appointment
@@ -51,11 +58,19 @@ optimality = 100
 # evening
 
 totalSlots = 0
+# The number of maximum total time slots there will be according to the admin constraints
+
 breakNum = 0
+# The number of breaks allocated throughout the evening - seen as not optimal, incremented in the emptySlot function
+
 appointmentNum = 0
 
 
+# The number of successful appointments allocated, incremented in the createSlot function
+
+
 # User-friendly UI functionality
+
 
 def continueReq():
     """Slows down the pace of the program to make it more user friendly"""
@@ -64,7 +79,7 @@ def continueReq():
 
 
 def shortSleep():
-    """Calls the time library function - sleep for 0.5s to slow down the pace of the program"""
+    """Calls the time library function - sleep, for 0.5s to slow down the pace of the program"""
     time.sleep(0.5)
 
 
@@ -174,7 +189,7 @@ def getData(filename):
                     teacher = email.split('(')[0].strip()
                     teacherEmails[teacher] = email.split('(')[1][:-1]
     except:
-        # Bare except needed as csv could be formatted wrong in countless permutations
+        # Bare except needed as csv could be formatted incorrectly in countless permutations
         error('CSV not formatted correctly.')
         menu()
 
@@ -199,7 +214,7 @@ def checkTime(reqTime):
 
 
 def decimalTimeFromString(string):
-    """Converts time in format HH:MM to decimal form so it can be used in calculations"""
+    """Converts time in format HH:MM to decimal form so it can be used in mathematical calculations"""
     (h, m) = string.split(':')
     return float(int(h) + int(m) / 60)
 
@@ -208,31 +223,25 @@ def customRun(eveningStart, eveningEnd, appointmentLength):
     """Redirects custom run to main slot-sorter, changing the default values"""
     global slots, teacherList
     slots = []
-    print(teacherList)
     slotSorter(teacherList, studentTeacher, eveningStart, eveningEnd, appointmentLength)
 
 
 # Part 2 - Optimisation functionality
 
 
-# Loops through each slot with each teacher and matches students to their teachers needed
 def slotSorter(teachers, students, eveningStart, eveningEnd, appointmentLength):
+    """Loops through each slot with each teacher and matches students to their teachers needed"""
     global totalSlots
-    potentialEnd = {}
-    for teacher in teachers:
-        potentialEnd[teacher] = 0
     totalSlots = int((eveningEnd - eveningStart) * (60 / appointmentLength))
-    print(f'Total slots : {totalSlots}')
     for i in range(1, totalSlots + 1):
-        if len(teachers) == 0:
-            endEvening()
-            break
+        # Looping through each slot, bounds incremented to eliminate the 0-based index in python
         decTime = decimalTime(i, eveningStart, appointmentLength)
         clearExcluded()
         higherBreakList = breakList.copy()
         clearLowBreak()
         slotHeading(i, eveningStart, appointmentLength)
         for teacher in teachers:
+            # Loops through each teacher and sorts students from highest to lowest priority for the respective teacher
             priorities = {}
             slotCreated = False
             for student in students.keys():
@@ -240,24 +249,26 @@ def slotSorter(teachers, students, eveningStart, eveningEnd, appointmentLength):
                     priorities[student] = getPriority(student, studentTeacher, teacher)
             studentPriorities = prioritySorter(priorities)
             for student in studentPriorities:
-                # Optimal solution
                 if not checkExcluded(student) and slotCreated is False and student not in higherBreakList and \
                         startTimes[student] <= decTime < endTimes[student]:
+                    # The optimal solution, following all user-defined constraints and an appointment break
                     createSlot(teacher, student)
                     slotCreated = True
-                    potentialEnd[teacher] = 0
                     break
-            # Comes here if constraints don't allow anyone or all appointments have been made
             if not slotCreated:
-                potentialEnd[teacher] += 1
-                emptySlot(teacher)
-                if potentialEnd[teacher] == 2:
-                    remove = True
-                    for student in list(studentTeacher.keys()):
-                        if teacher in studentTeacher[student] and endTimes[student] > decTime:
-                            remove = False
-                    if remove:
-                        teachers.remove(teacher)
+                # If constraints don't allow anyone or all appointments have been made
+                remove = True
+                for student in list(studentTeacher.keys()):
+                    # Checks if any student present at the time is requesting an appointment with the teacher
+                    if teacher in studentTeacher[student] and endTimes[student] > decTime:
+                        remove = False
+                        emptySlot(teacher)
+                if remove:
+                    teachers.remove(teacher)
+                    if len(teachers) == 0:
+                        # If no teachers needed left the evening will end
+                        endEvening()
+                        break
     endEvening()
 
 
@@ -359,6 +370,9 @@ def endEvening():
     global studentTeacher, optimality, staticStudents
     slots.append('End of evening\n')
     print(f'Outstanding requests : {studentTeacher}')
+    if len(studentTeacher) > 3:
+        print(f'{len(studentTeacher)} appointments unfulfilled, perhaps try changing the evening start & end times or '
+              f'change the appointment length')
     priorityImpact = 0
     for student in studentTeacher.keys():
         for teacher in studentTeacher[student].split(','):
