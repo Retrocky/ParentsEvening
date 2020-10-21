@@ -61,13 +61,12 @@ totalSlots = 0
 # The number of maximum total time slots there will be according to the admin constraints
 
 breakNum = 0
-# The number of breaks allocated throughout the evening - seen as not optimal, incremented in the emptySlot function
+# The number of breaks allocated throughout the evening - seen as sub-optimal, incremented in the emptySlot function
 
 appointmentNum = 0
-
-
 # The number of successful appointments allocated, incremented in the createSlot function
 
+lastSlot = ''
 
 # User-friendly UI functionality
 
@@ -231,7 +230,7 @@ def customRun(eveningStart, eveningEnd, appointmentLength):
 
 def slotSorter(teachers, students, eveningStart, eveningEnd, appointmentLength):
     """Loops through each slot with each teacher and matches students to their teachers needed"""
-    global totalSlots
+    global totalSlots, lastSlot
     totalSlots = int((eveningEnd - eveningStart) * (60 / appointmentLength))
     for i in range(1, totalSlots + 1):
         # Looping through each slot, bounds incremented to eliminate the 0-based index in python
@@ -239,7 +238,7 @@ def slotSorter(teachers, students, eveningStart, eveningEnd, appointmentLength):
         clearExcluded()
         higherBreakList = breakList.copy()
         clearLowBreak()
-        slotHeading(i, eveningStart, appointmentLength)
+        slots.append(slotHeading(i, eveningStart, appointmentLength))
         for teacher in teachers:
             # Loops through each teacher and sorts students from highest to lowest priority for the respective teacher
             priorities = {}
@@ -253,6 +252,7 @@ def slotSorter(teachers, students, eveningStart, eveningEnd, appointmentLength):
                         startTimes[student] <= decTime < endTimes[student]:
                     # The optimal solution, following all user-defined constraints and an appointment break
                     createSlot(teacher, student)
+                    lastSlot = slots.index(slots[-1])
                     slotCreated = True
                     break
             if not slotCreated:
@@ -262,35 +262,35 @@ def slotSorter(teachers, students, eveningStart, eveningEnd, appointmentLength):
                     # Checks if any student present at the time is requesting an appointment with the teacher
                     if teacher in studentTeacher[student] and endTimes[student] > decTime:
                         remove = False
-                        emptySlot(teacher)
                 if remove:
                     teachers.remove(teacher)
                     if len(teachers) == 0:
                         # If no teachers needed left the evening will end
                         endEvening()
                         break
+                emptySlot(teacher)
     endEvening()
 
 
-# Returns the decimal time of a specified slot
 def decimalTime(slot, startTime, appointmentLength):
+    """Returns the decimal time of a specified slot"""
     appointmentDivisible = appointmentLength / 60
     decTime = startTime + appointmentDivisible * (slot - 1)
     return decTime
 
 
-# Clears the excluded students at the start of a new slot
 def clearExcluded():
+    """Clears the excluded students at the start of a new slot"""
     excluded.clear()
 
 
-# Clears the lower level break-list so new students can be added
 def clearLowBreak():
+    """Clears the lower level break-list so new students can be added"""
     breakList.clear()
 
 
-# Formats time in a user-friendly manner, converting decimal to hours & minutes
 def slotHeading(slot, startTime, appointmentLength):
+    """Formats time in a user-friendly manner, converting decimal to hours & minutes"""
     strTime = decimalTime(slot, startTime, appointmentLength)
     hours = int(strTime)
     minutes = (strTime * 60) % 60
@@ -298,19 +298,19 @@ def slotHeading(slot, startTime, appointmentLength):
     if len(minutes) == 1:
         minutes = f'0{minutes}'
     strTime = f'{hours}:{minutes}'
-    slots.append(f'Slot : {slot} Time : {strTime}')
+    return f'Slot : {slot} Time : {strTime}'
 
 
-# Returns the priority weighting for a teacher by the respective student
 def getPriority(student, students, reqTeacher):
+    """Returns the priority weighting for a teacher by the respective student"""
     teachers = str(students[student]).split(',')
     for teacher in teachers:
         if reqTeacher in teacher:
             return int((teacher.split('('))[1][0])
 
 
-# Sorts students from highest priority to lowest priority given a certain teacher
 def prioritySorter(priorityDict):
+    """Sorts students from highest priority to lowest priority given a certain teacher"""
     sortedList = []
     flipped = {}
     for key, value in priorityDict.items():
@@ -325,13 +325,13 @@ def prioritySorter(priorityDict):
     return [i for i in reversed(sortedList)]
 
 
-# Checks if a student is excluded from this round
 def checkExcluded(student):
+    """Checks if a student is excluded from this round"""
     return True if student in excluded else False
 
 
-# Creates slots and excludes students from another appointment that time slot, optimality increases by 5%
 def createSlot(teacher, student):
+    """Creates slots and excludes students from another appointment that time slot, optimality increases by 5%"""
     global appointmentNum, optimality
     appointmentNum += 1
     slots.append(f'{teacher} : {student}')
@@ -349,13 +349,13 @@ def createSlot(teacher, student):
         optimality = 100
 
 
-# Excludes student from another appointment during the current slot
 def excludeStudent(student):
+    """Excludes student from another appointment during the current slot"""
     excluded.append(student)
 
 
-# Creates a break for the teacher if the slot is empty
 def emptySlot(teacher):
+    """Creates a break for the teacher if the slot is empty"""
     slots.append(f"{teacher} : BREAK")
     global breakNum, optimality
     optimality *= 0.98
@@ -365,8 +365,9 @@ def emptySlot(teacher):
 # Part 3 - Post optimisation functionality
 
 
-# Initiates the end of the evening, calculates optimality and requests to email students & teachers
 def endEvening():
+    """Initiates the end of the evening, calculates optimality and requests to email students & teachers"""
+    cleanup()
     global studentTeacher, optimality, staticStudents
     slots.append('End of evening\n')
     print(f'Outstanding requests : {studentTeacher}')
@@ -384,8 +385,14 @@ def endEvening():
     adminMenu()
 
 
-# Outputs slots in a user-friendly manner
+def cleanup():
+    """Cleans up the list 'Slots'"""
+    global slots, lastSlot
+    slots = slots[:lastSlot + 1]
+
+
 def outputSlots():
+    """Outputs slots in a user-friendly manner"""
     print('=' * 100)
     for item in slots:
         if 'Slot : ' in item:
@@ -393,14 +400,14 @@ def outputSlots():
             print('-' * 50)
             print(item)
         elif item == 'End of evening':
-            print('\nEnd of evening\n')
+            print('\n\nEnd of evening\n')
         else:
             print(item)
     print('=' * 100)
 
 
-# Returns a dictionary of a certain teacher's slots
 def teacherSlots(teacher):
+    """Returns a dictionary of a certain teacher's slots"""
     temp = ''
     teacherAppointments = {}
     for item in slots:
@@ -411,8 +418,8 @@ def teacherSlots(teacher):
     emailTeacher(teacher, teacherAppointments)
 
 
-# Returns a dictionary of a certain student's slots
 def studentSlots(student):
+    """Returns a dictionary of a certain student's slots"""
     temp = ''
     studentAppointments = {}
     for item in slots:
@@ -424,29 +431,29 @@ def studentSlots(student):
     emailStudent(student, studentAppointments)
 
 
-# Using the Yagmail library - teachers are emailed in a user-friendly manner all of their slots
 def emailTeacher(teacher, data):
+    """Using the Yagmail library - teachers are emailed in a user-friendly manner all of their slots"""
     message = f'Hello {teacher}, here are your appointments :\n\n'
     for slot in data.keys():
         message += f'{slot}\n{data[slot]}\n\n'
     yagmail.SMTP(mail.email, mail.password).send(teacherEmails[teacher], 'Parents Evening Appointments', message)
 
 
-# Using the Yagmail library - students are emailed in a user-friendly manner all of their slots
 def emailStudent(student, data):
+    """Using the Yagmail library - students are emailed in a user-friendly manner all of their slots"""
     message = f'Hello {student}, here are your appointments : \n\n'
     for slot in data.keys():
         message += f'{slot}\n{data[slot]}\n\n'
     yagmail.SMTP(mail.email, mail.password).send(studentEmails[student], 'Parents Evening Appointments', message)
 
 
-# Takes the admin to stage 2 of the program, the post optimisation menu
 def adminPortal():
+    """Takes the admin to the post optimisation menu"""
     adminMenu()
 
 
-# Admin menu UI
 def adminMenu():
+    """Admin menu UI"""
     print('+' * 100)
     print('\nAdmin portal')
     print('\n1 - Output all appointments')
@@ -461,8 +468,8 @@ def adminMenu():
     checkAdminMenuValues(value)
 
 
-# Checks / validates menu choices and redirects to correct function.
 def checkAdminMenuValues(value):
+    """Checks / validates menu choices and redirects to correct function."""
     global staticTeachers, staticStudents
     try:
         value = int(value)
@@ -505,8 +512,8 @@ def checkAdminMenuValues(value):
         adminMenu()
 
 
-# Emails an admin with all of the generated slots
 def emailAdmin(email, data):
+    """Emails an admin with all of the generated slots"""
     message = 'Hello, here are all of the generated appointments : \n'
     for slot in data:
         message += f'\n{slot}\n' if 'Slot : ' in slot else f'{slot}\n'
@@ -514,6 +521,7 @@ def emailAdmin(email, data):
 
 
 def edit():
+    """Allows the admin to manually edit the student in each appointment"""
     global slots, totalSlots
     potentialEdits = []
     print('Editing\n')
@@ -522,16 +530,19 @@ def edit():
         reqSlot = input('\nWhich slot would you like to change? (Enter slot number) : ')
         try:
             reqSlot = int(reqSlot)
-            if reqSlot > 0 and reqSlot >= totalSlots:
+            if 0 < reqSlot <= totalSlots:
                 break
         except ValueError:
             error(f'Please enter a number in the range of 0 -> {totalSlots}')
             pass
     for item in slots:
         if f'Slot : {reqSlot}' in item:
-            for i in range(len(staticTeachers) + 1):
-                print(f'\n{slots[slots.index(item) + i]}')
-                potentialEdits.append(slots[slots.index(item) + i])
+            try:
+                for i in range(len(staticTeachers) + 1):
+                    print(f'\n{slots[slots.index(item) + i]}')
+                    potentialEdits.append(slots[slots.index(item) + i])
+            except IndexError:
+                break
     while True:
         reqTeacher = str(input('\nWhich appointment would you like to change? (Enter teacher name) : '))
         if reqTeacher in staticTeachers:
@@ -556,8 +567,8 @@ def edit():
     adminMenu()
 
 
-# Outputs the optimisation analytics in a user-friendly format
 def analyse():
+    """Outputs the optimisation analytics in a user-friendly format"""
     time.sleep(1)
     global optimality, totalSlots, appointmentNum, breakNum
     print(f'\nOverall optimality : {int(optimality)}%'
@@ -567,6 +578,6 @@ def analyse():
     adminMenu()
 
 
-# Starts the program
 if __name__ == '__main__':
+    # Starts the program
     menu()
