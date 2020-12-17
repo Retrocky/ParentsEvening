@@ -10,6 +10,7 @@ import pandas.errors  # Used to capture errors when parsing the user-inputted cs
 import yagmail  # Used to email end-users with appointments
 
 from ParentsEvening import mail  # A separate file containing passwords for the email to make it more secure
+from ParentsEvening import stack  # A separate file containing a stack data-structure to use in the program
 
 # Declaring variables
 
@@ -67,6 +68,7 @@ appointmentNum = 0
 # The number of successful appointments allocated, incremented in the createSlot function
 
 lastSlot = ''
+
 
 # User-friendly UI functionality
 
@@ -231,6 +233,25 @@ def customRun(eveningStart, eveningEnd, appointmentLength):
 def slotSorter(teachers, students, eveningStart, eveningEnd, appointmentLength):
     """Loops through each slot with each teacher and matches students to their teachers needed"""
     global totalSlots, lastSlot
+
+    def check(stackStruct):
+        """
+        Recursive nested function that finds the optimal student
+        :param stackStruct:
+        :return:
+        """
+        if not stackStruct.checkEmpty():
+            potentialStudent = stackStruct.pop()
+
+            if not checkExcluded(potentialStudent) and potentialStudent not in higherBreakList\
+                    and startTimes[potentialStudent] <= decTime < endTimes[potentialStudent]:
+
+                return potentialStudent
+        elif stackStruct.checkEmpty():
+            return False
+        else:
+            check(stackStruct)
+
     totalSlots = int((eveningEnd - eveningStart) * (60 / appointmentLength))
     for i in range(1, totalSlots + 1):
         # Looping through each slot, bounds incremented to eliminate the 0-based index in python
@@ -241,21 +262,17 @@ def slotSorter(teachers, students, eveningStart, eveningEnd, appointmentLength):
         slots.append(slotHeading(i, eveningStart, appointmentLength))
         for teacher in teachers:
             # Loops through each teacher and sorts students from highest to lowest priority for the respective teacher
+            stackStructure = stack.Stack()
             priorities = {}
-            slotCreated = False
             for student in students.keys():
                 if teacher in students[student]:
                     priorities[student] = getPriority(student, studentTeacher, teacher)
-            studentPriorities = prioritySorter(priorities)
-            for student in studentPriorities:
-                if not checkExcluded(student) and slotCreated is False and student not in higherBreakList and \
-                        startTimes[student] <= decTime < endTimes[student]:
-                    # The optimal solution, following all user-defined constraints and an appointment break
-                    createSlot(teacher, student)
-                    lastSlot = slots.index(slots[-1])
-                    slotCreated = True
-                    break
-            if not slotCreated:
+            prioritiesStackStructure = prioritySorter(priorities, stackStructure)
+            optStudent = check(prioritiesStackStructure)
+            if optStudent:
+                createSlot(teacher, optStudent)
+                lastSlot = slots.index(slots[-1])
+            else:
                 # If constraints don't allow anyone or all appointments have been made
                 remove = True
                 for student in list(studentTeacher.keys()):
@@ -309,9 +326,8 @@ def getPriority(student, students, reqTeacher):
             return int((teacher.split('('))[1][0])
 
 
-def prioritySorter(priorityDict):
+def prioritySorter(priorityDict, stackStruct):
     """Sorts students from highest priority to lowest priority given a certain teacher"""
-    sortedList = []
     flipped = {}
     for key, value in priorityDict.items():
         if value not in flipped:
@@ -321,8 +337,8 @@ def prioritySorter(priorityDict):
     for weight in range(1, 4):
         if weight in list(flipped.keys()):
             for i in range(len(flipped[weight])):
-                sortedList.append(flipped[weight][i])
-    return [i for i in reversed(sortedList)]
+                stackStruct.push(flipped[weight][i])
+    return stackStruct
 
 
 def checkExcluded(student):
